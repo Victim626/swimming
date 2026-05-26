@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usbtj.springboot.swimming.mapper.AppointmentMapper">
+    
+    <resultMap id="appointmentMap" type="com.usbtj.springboot.swimming.entity.Appointment">
+        <id property="id" column="id"/>
+        <result property="coachId" column="coach_id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="appointmentDate" column="appointment_date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="location" column="location"/>
+        <result property="status" column="status"/>
+        <result property="notes" column="notes"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <!-- 关联字段 -->
+        <result property="coachName" column="coach_name"/>
+        <result property="studentName" column="student_name"/>
+    </resultMap>
+
+    <select id="findById" resultMap="appointmentMap">
+        SELECT a.*, 
+               u1.real_name as coach_name,
+               u2.real_name as student_name
+        FROM appointments a
+        LEFT JOIN users u1 ON a.coach_id = u1.id
+        LEFT JOIN users u2 ON a.student_id = u2.id
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findByCoachId" resultMap="appointmentMap">
+        SELECT a.*, 
+               u1.real_name as coach_name,
+               u2.real_name as student_name
+        FROM appointments a
+        LEFT JOIN users u1 ON a.coach_id = u1.id
+        LEFT JOIN users u2 ON a.student_id = u2.id
+        WHERE a.coach_id = #{coachId}
+        ORDER BY a.appointment_date DESC, a.start_time ASC
+    </select>
+
+    <select id="findByStudentId" resultMap="appointmentMap">
+        SELECT a.*, 
+               u1.real_name as coach_name,
+               u2.real_name as student_name
+        FROM appointments a
+        LEFT JOIN users u1 ON a.coach_id = u1.id
+        LEFT JOIN users u2 ON a.student_id = u2.id
+        WHERE a.student_id = #{studentId}
+        ORDER BY a.appointment_date DESC, a.start_time ASC
+    </select>
+
+    <select id="findByCoachIdAndDate" resultMap="appointmentMap">
+        SELECT a.*, 
+               u1.real_name as coach_name,
+               u2.real_name as student_name
+        FROM appointments a
+        LEFT JOIN users u1 ON a.coach_id = u1.id
+        LEFT JOIN users u2 ON a.student_id = u2.id
+        WHERE a.coach_id = #{coachId} 
+          AND a.appointment_date = #{date}
+        ORDER BY a.start_time ASC
+    </select>
+
+    <select id="countConfirmedByCoachDateAndTime" resultType="int">
+        SELECT COUNT(*) FROM appointments 
+        WHERE coach_id = #{coachId}
+          AND appointment_date = #{date}
+          AND start_time = #{startTime}
+          AND end_time = #{endTime}
+          AND status IN ('CONFIRMED', 'PENDING')
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO appointments (
+            coach_id, student_id, appointment_date, start_time, end_time, 
+            location, status, notes
+        ) VALUES (
+            #{coachId}, #{studentId}, #{appointmentDate}, #{startTime}, #{endTime},
+            #{location}, #{status}, #{notes}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE appointments 
+        SET coach_id = #{coachId},
+            student_id = #{studentId},
+            appointment_date = #{appointmentDate},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            location = #{location},
+            status = #{status},
+            notes = #{notes}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE appointments 
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM appointments WHERE id = #{id}
+    </delete>
+    
+    <!-- 清除过期预约 -->
+    <delete id="deleteExpiredAppointments">
+        DELETE FROM appointments WHERE appointment_date &lt; #{beforeDate}
+    </delete>
+    
+</mapper>

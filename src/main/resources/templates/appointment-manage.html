@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预约管理 - 游泳教练平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        /* 头部导航 */
+        .header { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn { width: 40px; height: 40px; border: none; background: #f0f0f0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 20px; }
+        .back-btn:hover { background: #e0e0e0; transform: translateX(-3px); }
+        .header h1 { color: #333; font-size: 24px; }
+        .header p { color: #666; margin-top: 5px; font-size: 14px; }
+        
+        /* 日期选择器 */
+        .date-selector { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; }
+        .date-selector label { font-weight: bold; color: #333; white-space: nowrap; }
+        .date-selector input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; flex: 1; }
+        
+        /* 标签页 */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tab { flex: 1; padding: 12px; background: transparent; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; color: #666; }
+        .tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); }
+        .tab:hover:not(.active) { background: #f5f5f5; }
+        
+        /* 操作栏 */
+        .action-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .action-bar button { padding: 10px 20px; background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3); }
+        .action-bar button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4); }
+        
+        /* 预约卡片 */
+        .appointment-card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; position: relative; overflow: hidden; }
+        .appointment-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .appointment-card.pending { border-left: 4px solid #ff9800; }
+        .appointment-card.confirmed { border-left: 4px solid #4caf50; }
+        .appointment-card.completed { border-left: 4px solid #2196f3; }
+        .appointment-card.cancelled { border-left: 4px solid #f44336; opacity: 0.7; }
+        .appointment-card.unavailable-slot { border-left: 4px solid #9e9e9e; background: #fafafa; }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-header h3 { color: #333; font-size: 18px; }
+        .status-badge { padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .status-badge.PENDING { background: #fff3e0; color: #ff9800; }
+        .status-badge.CONFIRMED { background: #e8f5e9; color: #4caf50; }
+        .status-badge.COMPLETED { background: #e3f2fd; color: #2196f3; }
+        .status-badge.CANCELLED { background: #ffebee; color: #f44336; }
+        .status-badge.UNAVAILABLE { background: #f5f5f5; color: #9e9e9e; }
+        
+        .card-body { margin-bottom: 15px; }
+        .info-row { display: flex; margin-bottom: 8px; font-size: 14px; padding: 8px; background: #f9f9f9; border-radius: 6px; }
+        .info-label { color: #666; width: 100px; font-weight: bold; }
+        .info-value { color: #333; flex: 1; }
+        
+        .card-actions { display: flex; gap: 10px; }
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; }
+        .confirm-btn { background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3); }
+        .confirm-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4); }
+        .cancel-btn { background: linear-gradient(135deg, #f44336 0%, #da190b 100%); color: white; box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3); }
+        .cancel-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4); }
+        .remove-unavailable-btn { background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%); color: white; }
+        .remove-unavailable-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(158, 158, 158, 0.4); }
+        .action-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        /* 弹窗优化 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; backdrop-filter: blur(4px); }
+        .modal.show { display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }
+        .modal-header h2 { color: #333; font-size: 20px; }
+        .close-btn { width: 36px; height: 36px; border: none; background: #f5f5f5; border-radius: 50%; cursor: pointer; color: #999; font-size: 24px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .close-btn:hover { background: #e0e0e0; color: #333; transform: rotate(90deg); }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-size: 14px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        
+        .submit-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; margin-top: 10px; transition: all 0.3s; }
+        
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+        .empty-state p { color: #666; font-size: 16px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.location.href='/mySpringBoot/dashboard'" title="返回">←</button>
+                <div>
+                    <h1>📋 预约管理</h1>
+                    <p>管理学员的预约申请</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="date-selector">
+            <label>📆 筛选日期：</label>
+            <input type="date" id="selectedDate">
+            <button onclick="loadAllAppointments()" style="margin-left: 10px; padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">显示所有</button>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="filterByStatus('all')">全部</button>
+            <button class="tab" onclick="filterByStatus('PENDING')">待确认</button>
+            <button class="tab" onclick="filterByStatus('CONFIRMED')">已确认</button>
+            <button class="tab" onclick="filterByStatus('COMPLETED')">已完成</button>
+            <button class="tab" onclick="filterByStatus('CANCELLED')">已取消</button>
+        </div>
+        
+        <div class="action-bar">
+            <button onclick="openSetUnavailableModal()">⚠️ 设置时间段不可用</button>
+            <button onclick="cleanExpiredAppointments()" style="background: linear-gradient(135deg, #f44336 0%, #da190b 100%);">🗑️ 清除过期预约</button>
+        </div>
+        
+        <div id="appointmentsContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <p>暂无预约记录</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 设置不可用时间段弹窗 -->
+    <div id="unavailableModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>设置时间段不可用</h2>
+                <button class="close-btn" onclick="closeUnavailableModal()">&times;</button>
+            </div>
+            <form id="unavailableForm">
+                <div class="form-group">
+                    <label>选择日期</label>
+                    <input type="date" id="unavailableDate" required>
+                </div>
+                <div class="form-group">
+                    <label>选择时间段</label>
+                    <select id="unavailableSlot" required>
+                        <option value="08:30-10:00">早上 08:30-10:00</option>
+                        <option value="15:30-17:00">下午 15:30-17:00</option>
+                        <option value="19:30-21:00">晚上 19:30-21:00</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn" style="background: #ff9800;">确认设置</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let allAppointments = [];
+        let currentFilter = 'all';
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            document.getElementById('selectedDate').value = today.toISOString().split('T')[0];
+            
+            // 默认加载所有预约
+            loadAllAppointments();
+            
+            document.getElementById('selectedDate').addEventListener('change', function() {
+                loadAppointments();
+            });
+        });
+        
+        // 加载所有预约
+        function loadAllAppointments() {
+            // 清空日期筛选
+            document.getElementById('selectedDate').value = '';
+            
+            fetch('/mySpringBoot/api/appointments/coach')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        allAppointments = data.data;
+                        renderAppointments();
+                    }
+                });
+        }
+        
+        function loadAppointments() {
+            const date = document.getElementById('selectedDate').value;
+            if (!date) return;
+            
+            fetch(`/mySpringBoot/api/appointments/coach/date?date=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        allAppointments = data.data;
+                        renderAppointments();
+                    }
+                });
+        }
+        
+        function filterByStatus(status) {
+            currentFilter = status;
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            renderAppointments();
+        }
+        
+        function renderAppointments() {
+            const container = document.getElementById('appointmentsContainer');
+            
+            let filtered = allAppointments;
+            if (currentFilter !== 'all') {
+                filtered = allAppointments.filter(a => a.status === currentFilter);
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"></div>
+                        <p>暂无预约记录</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const statusMap = {
+                'PENDING': '待确认',
+                'CONFIRMED': '已确认',
+                'COMPLETED': '已完成',
+                'CANCELLED': '已取消'
+            };
+            
+            container.innerHTML = filtered.map(app => {
+                // 判断是否是教练设置的不可用时间段：只看notes字段
+                const isUnavailable = app.notes === '教练设置不可用';
+                
+                return `
+                <div class="appointment-card ${isUnavailable ? 'unavailable-slot' : app.status.toLowerCase()}">
+                    <div class="card-header">
+                        <h3>${isUnavailable ? '⚠️ 不可用时间段' : '👤 学员：' + app.studentName}</h3>
+                        <span class="status-badge ${isUnavailable ? 'UNAVAILABLE' : app.status}">${isUnavailable ? '不可用' : statusMap[app.status]}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">📅 日期：</span>
+                            <span class="info-value">${app.appointmentDate}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🕐 时间：</span>
+                            <span class="info-value">${app.startTime.substring(0, 5)} - ${app.endTime.substring(0, 5)}</span>
+                        </div>
+                        ${app.location ? `
+                        <div class="info-row">
+                            <span class="info-label">📍 地点：</span>
+                            <span class="info-value">${app.location}</span>
+                        </div>
+                        ` : ''}
+                        ${app.notes && !isUnavailable ? `
+                        <div class="info-row">
+                            <span class="info-label">📝 备注：</span>
+                            <span class="info-value">${app.notes}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="card-actions">
+                        ${isUnavailable ? `
+                            <button class="action-btn remove-unavailable-btn" onclick="removeUnavailable(${app.id})">❌ 取消不可用</button>
+                        ` : app.status === 'PENDING' ? `
+                            <button class="action-btn confirm-btn" onclick="confirmAppointment(${app.id})">✅ 确认预约</button>
+                            <button class="action-btn cancel-btn" onclick="cancelAppointment(${app.id})">❌ 取消</button>
+                        ` : `
+                            <button class="action-btn cancel-btn" onclick="cancelAppointment(${app.id})" ${app.status === 'CANCELLED' || app.status === 'COMPLETED' ? 'disabled' : ''}>❌ 取消</button>
+                        `}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+        
+        function confirmAppointment(id) {
+            if (!confirm('确认该预约吗？')) return;
+            
+            fetch('/mySpringBoot/api/appointment/confirm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('已确认');
+                    loadAppointments();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+        
+        function cancelAppointment(id) {
+            if (!confirm('取消该预约吗？')) return;
+            
+            fetch('/mySpringBoot/api/appointment/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('已取消');
+                    loadAppointments();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+        
+        function removeUnavailable(id) {
+            if (!confirm('取消该时间段的不可用设置吗？')) return;
+            
+            // 直接删除这条记录
+            fetch('/mySpringBoot/api/appointment/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${id}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('已取消不可用设置');
+                    loadAppointments();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+        
+        function cleanExpiredAppointments() {
+            if (!confirm('确定要清除所有过期预约吗？\n（将删除今天之前的所有预约记录）')) return;
+            
+            fetch('/mySpringBoot/api/appointment/clean-expired', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert(data.message);
+                    loadAppointments();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+        
+        function openSetUnavailableModal() {
+            const today = new Date();
+            document.getElementById('unavailableDate').value = today.toISOString().split('T')[0];
+            document.getElementById('unavailableDate').min = today.toISOString().split('T')[0];
+            document.getElementById('unavailableModal').classList.add('show');
+        }
+        
+        function closeUnavailableModal() {
+            document.getElementById('unavailableModal').classList.remove('show');
+        }
+        
+        document.getElementById('unavailableForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const date = document.getElementById('unavailableDate').value;
+            const slot = document.getElementById('unavailableSlot').value;
+            const [startTime, endTime] = slot.split('-');
+            
+            fetch('/mySpringBoot/api/appointment/slot/close', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    appointmentDate: date,
+                    startTime: startTime + ':00',
+                    endTime: endTime + ':00'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('设置成功！该时间段已标记为不可用');
+                    closeUnavailableModal();
+                    loadAppointments();
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usbtj.springboot.swimming.mapper.PostMapper">
+
+    <resultMap id="postMap" type="com.usbtj.springboot.swimming.entity.Post">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="planDetailId" column="plan_detail_id"/>
+        <result property="dayNumber" column="day_number"/>
+        <result property="planName" column="plan_name"/>
+        <result property="trainingDate" column="training_date"/>
+        <result property="intensity" column="intensity"/>
+        <result property="duration" column="duration"/>
+        <result property="distance" column="distance"/>
+        <result property="showTrainingInfo" column="show_training_info"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="commentCount" column="comment_count"/>
+        <result property="likedByCurrentUser" column="liked_by_current_user"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="username" column="username"/>
+        <result property="realName" column="real_name"/>
+        <result property="avatar" column="avatar"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO posts (
+            user_id, title, content,
+            plan_detail_id, day_number, plan_name, training_date, intensity, duration, distance,
+            show_training_info
+        ) VALUES (
+            #{userId}, #{title}, #{content},
+            #{planDetailId}, #{dayNumber}, #{planName}, #{trainingDate}, #{intensity}, #{duration}, #{distance},
+            #{showTrainingInfo}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE posts
+        SET title = #{title},
+            content = #{content},
+            plan_detail_id = #{planDetailId},
+            day_number = #{dayNumber},
+            plan_name = #{planName},
+            training_date = #{trainingDate},
+            intensity = #{intensity},
+            duration = #{duration},
+            distance = #{distance},
+            show_training_info = #{showTrainingInfo}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM posts WHERE id = #{id}
+    </delete>
+
+    <select id="findById" resultMap="postMap">
+        SELECT p.*, u.username, u.real_name, u.avatar,
+               CASE WHEN pl.user_id IS NULL THEN FALSE ELSE TRUE END AS liked_by_current_user
+        FROM posts p
+        LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN post_likes pl ON p.id = pl.post_id AND pl.user_id = #{currentUserId}
+        WHERE p.id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="postMap">
+        SELECT p.*, u.username, u.real_name, u.avatar,
+               CASE WHEN pl.user_id IS NULL THEN FALSE ELSE TRUE END AS liked_by_current_user
+        FROM posts p
+        LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN post_likes pl ON p.id = pl.post_id AND pl.user_id = #{currentUserId}
+        ORDER BY p.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="findByUserId" resultMap="postMap">
+        SELECT p.*, u.username, u.real_name, u.avatar,
+               CASE WHEN pl.user_id IS NULL THEN FALSE ELSE TRUE END AS liked_by_current_user
+        FROM posts p
+        LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN post_likes pl ON p.id = pl.post_id AND pl.user_id = #{currentUserId}
+        WHERE p.user_id = #{userId}
+        ORDER BY p.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <insert id="insertLike">
+        INSERT IGNORE INTO post_likes (post_id, user_id)
+        VALUES (#{postId}, #{userId})
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM post_likes WHERE post_id = #{postId} AND user_id = #{userId}
+    </delete>
+
+    <update id="incrementLikeCount">
+        UPDATE posts SET like_count = like_count + 1 WHERE id = #{id}
+    </update>
+
+    <update id="decrementLikeCount">
+        UPDATE posts SET like_count = GREATEST(like_count - 1, 0) WHERE id = #{id}
+    </update>
+
+    <update id="incrementCommentCount">
+        UPDATE posts SET comment_count = comment_count + 1 WHERE id = #{id}
+    </update>
+
+    <update id="decrementCommentCount">
+        UPDATE posts SET comment_count = GREATEST(comment_count - 1, 0) WHERE id = #{id}
+    </update>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM posts
+    </select>
+
+</mapper>

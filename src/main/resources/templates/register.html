@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游泳教练辅助平台 - 注册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .register-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 550px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .register-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .role-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .role-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 6px;
+        }
+
+        .success-message {
+            color: #4caf50;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 6px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .coach-fields,
+        .student-fields {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .coach-fields.show,
+        .student-fields.show {
+            display: block;
+        }
+
+        .required {
+            color: #f44336;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1>🏊 用户注册</h1>
+            <p>加入游泳教练辅助平台</p>
+        </div>
+
+        <form id="registerForm">
+            <!-- 角色选择 -->
+            <div class="form-group">
+                <label>注册类型 <span class="required">*</span></label>
+                <div class="role-selector">
+                    <button type="button" class="role-btn active" data-role="COACH">教练注册</button>
+                    <button type="button" class="role-btn" data-role="STUDENT">学员注册</button>
+                </div>
+                <input type="hidden" id="role" name="role" value="COACH">
+            </div>
+
+            <!-- 基础信息 -->
+            <div class="form-group">
+                <label for="username">用户名 <span class="required">*</span></label>
+                <input type="text" id="username" name="username" required placeholder="请输入用户名">
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码 <span class="required">*</span></label>
+                <input type="password" id="password" name="password" required placeholder="请输入密码（至少6位）" minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">确认密码 <span class="required">*</span></label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="请再次输入密码">
+            </div>
+
+            <!-- 教练专属字段 -->
+            <div class="coach-fields show" id="coachFields">
+                <div class="form-group">
+                    <label for="coachName">真实姓名 <span class="required">*</span></label>
+                    <input type="text" id="coachName" name="coachRealName" placeholder="请输入真实姓名">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="coachPhone">手机号</label>
+                        <input type="tel" id="coachPhone" name="coachPhone" placeholder="请输入手机号">
+                    </div>
+                    <div class="form-group">
+                        <label for="coachEmail">邮箱</label>
+                        <input type="email" id="coachEmail" name="coachEmail" placeholder="请输入邮箱">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学员专属字段 -->
+            <div class="student-fields" id="studentFields">
+                <div class="form-group">
+                    <label for="studentName">真实姓名 <span class="required">*</span></label>
+                    <input type="text" id="studentName" name="studentRealName" placeholder="请输入真实姓名">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="studentPhone">手机号</label>
+                        <input type="tel" id="studentPhone" name="studentPhone" placeholder="请输入手机号">
+                    </div>
+                    <div class="form-group">
+                        <label for="studentEmail">邮箱</label>
+                        <input type="email" id="studentEmail" name="studentEmail" placeholder="请输入邮箱">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gender">性别</label>
+                        <select id="gender" name="gender">
+                            <option value="">请选择</option>
+                            <option value="MALE">男</option>
+                            <option value="FEMALE">女</option>
+                            <option value="OTHER">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="age">年龄</label>
+                        <input type="number" id="age" name="age" placeholder="岁" min="1" max="120">
+                    </div>
+                </div>
+
+
+
+
+            </div>
+
+            <button type="submit" class="register-btn">注册</button>
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+        </form>
+
+        <div class="login-link">
+            已有账号？<a href="/mySpringBoot/">立即登录</a>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = 'COACH';
+
+        // 角色切换
+        document.querySelectorAll('.role-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedRole = this.dataset.role;
+                document.getElementById('role').value = selectedRole;
+
+                // 显示对应字段
+                if (selectedRole === 'COACH') {
+                    document.getElementById('coachFields').classList.add('show');
+                    document.getElementById('studentFields').classList.remove('show');
+                } else {
+                    document.getElementById('coachFields').classList.remove('show');
+                    document.getElementById('studentFields').classList.add('show');
+                }
+            });
+        });
+
+        // 表单提交
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            const registerBtn = document.querySelector('.register-btn');
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            // 验证密码
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                errorDiv.textContent = '两次输入的密码不一致';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // 验证必填字段
+            if (selectedRole === 'COACH') {
+                const coachName = document.getElementById('coachName').value.trim();
+                
+                if (!coachName) {
+                    errorDiv.textContent = '请输入真实姓名';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+            } else {
+                const studentName = document.getElementById('studentName').value.trim();
+                if (!studentName) {
+                    errorDiv.textContent = '请输入真实姓名';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+            }
+
+            // 禁用按钮
+            registerBtn.disabled = true;
+            registerBtn.textContent = '注册中...';
+
+            // 收集表单数据
+            const formData = new FormData();
+            formData.append('username', document.getElementById('username').value.trim());
+            formData.append('password', document.getElementById('password').value.trim());
+            formData.append('role', selectedRole);
+            
+            if (selectedRole === 'COACH') {
+                formData.append('coachRealName', document.getElementById('coachName').value.trim());
+                formData.append('coachPhone', document.getElementById('coachPhone').value.trim());
+                formData.append('coachEmail', document.getElementById('coachEmail').value.trim());
+            } else {
+                formData.append('studentRealName', document.getElementById('studentName').value.trim());
+                formData.append('studentPhone', document.getElementById('studentPhone').value.trim());
+                formData.append('studentEmail', document.getElementById('studentEmail').value.trim());
+                formData.append('gender', document.getElementById('gender').value);
+                formData.append('age', document.getElementById('age').value);
+            }
+
+            fetch('/mySpringBoot/register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    successDiv.textContent = '注册成功！即将跳转到登录页面...';
+                    successDiv.style.display = 'block';
+                    setTimeout(() => {
+                        if (selectedRole === 'COACH') {
+                            window.location.href = '/mySpringBoot/';
+                        } else {
+                            window.location.href = '/mySpringBoot/';
+                        }
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = data.message || '注册失败';
+                    errorDiv.style.display = 'block';
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = '注册';
+                }
+            })
+            .catch(error => {
+                console.error('注册错误:', error);
+                errorDiv.textContent = '网络错误，请稍后重试';
+                errorDiv.style.display = 'block';
+                registerBtn.disabled = false;
+                registerBtn.textContent = '注册';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usbtj.springboot.swimming.mapper.PlanDetailMapper">
+    
+    <resultMap id="planDetailMap" type="com.usbtj.springboot.swimming.entity.PlanDetail">
+        <id property="id" column="id"/>
+        <result property="planId" column="plan_id"/>
+        <result property="dayNumber" column="day_number"/>
+        <result property="trainingDate" column="training_date"/>
+        <result property="trainingItem" column="training_item"/>
+        <result property="duration" column="duration"/>
+        <result property="distance" column="distance"/>
+        <result property="intensity" column="intensity"/>
+        <result property="notes" column="notes"/>
+        <result property="isChecked" column="is_checked"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findByPlanId" resultMap="planDetailMap">
+        SELECT * FROM plan_details 
+        WHERE plan_id = #{planId} 
+        ORDER BY day_number ASC, sort_order ASC
+    </select>
+
+    <select id="findByStudentId" resultMap="planDetailMap">
+        SELECT pd.* FROM plan_details pd
+        INNER JOIN training_plans tp ON pd.plan_id = tp.id
+        WHERE tp.student_id = #{studentId}
+        ORDER BY pd.training_date ASC, pd.day_number ASC
+    </select>
+
+    <select id="findById" resultMap="planDetailMap">
+        SELECT * FROM plan_details WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO plan_details (
+            plan_id, day_number, training_date, training_item, 
+            duration, distance, intensity, notes, is_checked, sort_order
+        ) VALUES (
+            #{planId}, #{dayNumber}, #{trainingDate}, #{trainingItem},
+            #{duration}, #{distance}, #{intensity}, #{notes}, #{isChecked}, #{sortOrder}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE plan_details 
+        SET intensity = #{intensity},
+            notes = #{notes},
+            is_checked = #{isChecked}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM plan_details WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByPlanId">
+        DELETE FROM plan_details WHERE plan_id = #{planId}
+    </delete>
+
+    <update id="updateCheckStatus">
+        UPDATE plan_details 
+        SET is_checked = #{isChecked}
+        WHERE id = #{id}
+    </update>
+    
+</mapper>

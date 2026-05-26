@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天 - 游泳教练辅助平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+        }
+
+        .navbar {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            color: #333;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 20px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .back-btn:hover {
+            background: #e0e0e0;
+            transform: translateX(-3px);
+        }
+
+        .chat-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            height: calc(100vh - 100px);
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .contact-list {
+            width: 250px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+
+        .contact-list h3 {
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            margin: 0;
+        }
+
+        .contact-item {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .contact-item:hover {
+            background: #e8eaf6;
+        }
+
+        .contact-item.active {
+            background: #c5cae9;
+        }
+
+        .contact-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .message-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 60%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+
+        .message.sent .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .message.received .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .input-area {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 10px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .send-btn:hover {
+            background: #5568d3;
+        }
+
+        .empty-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #999;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='/mySpringBoot/dashboard'" title="返回">←</button>
+            <h1>💬 即时聊天</h1>
+        </div>
+        <a href="/mySpringBoot/dashboard" style="text-decoration: none;">
+    </div>
+
+    <div class="chat-container">
+        <div class="contact-list">
+            <h3>联系人</h3>
+            <div id="contacts">
+                <!-- 联系人列表将在这里动态加载 -->
+            </div>
+        </div>
+
+        <div class="chat-main">
+            <div class="chat-header" id="chatHeader">
+                选择一个联系人开始聊天
+            </div>
+
+            <div class="message-area" id="messageArea">
+                <div class="empty-state">
+                    请选择联系人查看聊天记录
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" class="message-input" id="messageInput" 
+                       placeholder="输入消息..." disabled>
+                <button class="send-btn" id="sendBtn" disabled>发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <script>
+        // 当前用户信息
+        let currentUser = null;
+        let currentReceiverId = null;
+        let currentReceiverName = null;
+        let pollingTimer = null;
+        let lastMessageId = 0;
+
+        // 页面加载时获取用户信息
+        window.onload = function() {
+            const userStr = sessionStorage.getItem('currentUser');
+            if (userStr) {
+                currentUser = JSON.parse(userStr);
+                loadContacts();
+                // 启动轮询，每2秒检查一次新消息
+                startPolling();
+            } else {
+                window.location.href = '/mySpringBoot/';
+            }
+        };
+
+        // 启动轮询
+        function startPolling() {
+            if (pollingTimer) clearInterval(pollingTimer);
+            pollingTimer = setInterval(() => {
+                if (currentReceiverId) {
+                    loadNewMessages();
+                }
+            }, 2000); // 每2秒轮询一次
+        }
+
+        // 加载新消息（增量更新）
+        function loadNewMessages() {
+            if (!currentReceiverId) return;
+            
+            fetch('/mySpringBoot/chat/history/' + currentReceiverId)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 200 && result.data) {
+                        const newMessages = result.data.filter(msg => msg.id > lastMessageId);
+                        if (newMessages.length > 0) {
+                            newMessages.forEach(msg => {
+                                const isSent = msg.senderId === currentUser.id;
+                                appendSingleMessage(msg, isSent);
+                                lastMessageId = msg.id;
+                            });
+                            const messageArea = document.getElementById('messageArea');
+                            messageArea.scrollTop = messageArea.scrollHeight;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('轮询失败:', error);
+                });
+        }
+
+        // 加载联系人列表
+        function loadContacts() {
+            fetch('/mySpringBoot/chat/users')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 200) {
+                        displayContacts(result.data);
+                    }
+                })
+                .catch(error => {
+                    console.error('加载联系人失败:', error);
+                });
+        }
+
+        // 显示联系人列表
+        function displayContacts(users) {
+            const contactsDiv = document.getElementById('contacts');
+            contactsDiv.innerHTML = '';
+
+            if (users.length === 0) {
+                contactsDiv.innerHTML = '<div class="contact-item">暂无联系人</div>';
+                return;
+            }
+
+            users.forEach(user => {
+                const contactDiv = document.createElement('div');
+                contactDiv.className = 'contact-item';
+                contactDiv.dataset.userId = user.id;
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'contact-name';
+                nameDiv.textContent = user.realName || user.username;
+                
+                const roleDiv = document.createElement('div');
+                roleDiv.style.fontSize = '12px';
+                roleDiv.style.color = '#666';
+                roleDiv.style.marginTop = '5px';
+                roleDiv.textContent = user.role === 'COACH' ? '🏊 教练' : ' 学员';
+                
+                contactDiv.appendChild(nameDiv);
+                contactDiv.appendChild(roleDiv);
+                contactDiv.onclick = () => selectContact(user.id, user.realName || user.username);
+                contactsDiv.appendChild(contactDiv);
+            });
+        }
+
+        // 选择联系人
+        function selectContact(receiverId, receiverName) {
+            currentReceiverId = receiverId;
+            currentReceiverName = receiverName;
+            lastMessageId = 0; // 重置消息ID
+            
+            // 更新联系人选中状态
+            document.querySelectorAll('.contact-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // 更新聊天头部
+            document.getElementById('chatHeader').textContent = '与 ' + receiverName + ' 聊天中';
+            
+            // 启用输入框
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+
+            // 加载聊天记录
+            loadChatHistory(receiverId);
+        }
+
+        // 加载聊天记录
+        function loadChatHistory(receiverId) {
+            fetch('/mySpringBoot/chat/history/' + receiverId)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 200) {
+                        displayMessages(result.data);
+                        // 更新最后一条消息ID
+                        if (result.data && result.data.length > 0) {
+                            lastMessageId = result.data[result.data.length - 1].id;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('加载聊天记录失败:', error);
+                });
+        }
+
+        // 显示消息列表
+        function displayMessages(messages) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = '';
+
+            if (!messages || messages.length === 0) {
+                messageArea.innerHTML = '<div class="empty-state">暂无消息，开始聊天吧~</div>';
+                return;
+            }
+
+            messages.forEach(message => {
+                const isSent = message.senderId === currentUser.id;
+                appendSingleMessage(message, isSent);
+            });
+
+            // 滚动到底部
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+
+        // 追加单条消息（增量更新用）
+        function appendSingleMessage(message, isSent) {
+            const messageArea = document.getElementById('messageArea');
+            // 移除空状态提示
+            const emptyState = messageArea.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = message.content;
+
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = formatTime(message.sendTime);
+
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timeDiv);
+            messageArea.appendChild(messageDiv);
+        }
+
+        // 格式化时间
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const date = new Date(timeStr);
+            return date.toLocaleString('zh-CN');
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+
+            if (!content || !currentReceiverId) return;
+
+            const message = {
+                senderId: currentUser.id,
+                receiverId: currentReceiverId,
+                content: content,
+                messageType: 'TEXT'
+            };
+
+            // 只通过 HTTP 发送
+            fetch('/mySpringBoot/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(message)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.code === 200) {
+                    input.value = '';
+                    // 立即刷新聊天记录
+                    loadChatHistory(currentReceiverId);
+                } else {
+                    alert(result.message);
+                }
+            })
+            .catch(error => {
+                console.error('发送消息失败:', error);
+                alert('发送失败');
+            });
+        }
+
+        // 页面关闭时清除轮询
+        window.onbeforeunload = function() {
+            if (pollingTimer) {
+                clearInterval(pollingTimer);
+            }
+        };
+
+        // 发送按钮点击事件
+        document.getElementById('sendBtn').onclick = sendMessage;
+
+        // 回车键发送
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

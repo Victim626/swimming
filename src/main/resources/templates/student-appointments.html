@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的预约 - 游泳教练平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn { width: 40px; height: 40px; border: none; background: #f0f0f0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 20px; }
+        .back-btn:hover { background: #e0e0e0; transform: translateX(-3px); }
+        .header h1 { color: #333; font-size: 24px; }
+        .header p { color: #666; margin-top: 5px; font-size: 14px; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tab { flex: 1; padding: 12px; background: transparent; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; color: #666; }
+        .tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); }
+        .tab:hover:not(.active) { background: #f5f5f5; }
+        
+        .appointment-card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .appointment-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .appointment-card.pending { border-left: 4px solid #ff9800; }
+        .appointment-card.confirmed { border-left: 4px solid #4caf50; }
+        .appointment-card.completed { border-left: 4px solid #2196f3; }
+        .appointment-card.cancelled { border-left: 4px solid #f44336; opacity: 0.7; }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-header h3 { color: #333; font-size: 18px; }
+        .status-badge { padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .status-badge.PENDING { background: #fff3e0; color: #ff9800; }
+        .status-badge.CONFIRMED { background: #e8f5e9; color: #4caf50; }
+        .status-badge.COMPLETED { background: #e3f2fd; color: #2196f3; }
+        .status-badge.CANCELLED { background: #ffebee; color: #f44336; }
+        
+        .card-body { margin-bottom: 15px; }
+        .info-row { display: flex; margin-bottom: 8px; font-size: 14px; padding: 8px; background: #f9f9f9; border-radius: 6px; }
+        .info-label { color: #666; width: 100px; font-weight: bold; }
+        .info-value { color: #333; flex: 1; }
+        
+        .card-actions { display: flex; gap: 10px; }
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; }
+        .cancel-btn { background: linear-gradient(135deg, #f44336 0%, #da190b 100%); color: white; box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3); }
+        .cancel-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4); }
+        .action-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+        .empty-state p { color: #666; font-size: 16px; line-height: 1.6; }
+        
+        .appointment-link { display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; margin-top: 15px; transition: all 0.3s; }
+        .appointment-link:hover { background: #5568d3; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.location.href='/mySpringBoot/dashboard'" title="返回">←</button>
+                <div>
+                    <h1>📅 我的预约</h1>
+                    <p>查看和管理我的所有预约</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="filterByStatus('all')">全部</button>
+            <button class="tab" onclick="filterByStatus('PENDING')">待确认</button>
+            <button class="tab" onclick="filterByStatus('CONFIRMED')">已确认</button>
+            <button class="tab" onclick="filterByStatus('COMPLETED')">已完成</button>
+            <button class="tab" onclick="filterByStatus('CANCELLED')">已取消</button>
+        </div>
+        
+        <div id="appointmentsContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let allAppointments = [];
+        let currentFilter = 'all';
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            loadMyAppointments();
+        });
+        
+        function loadMyAppointments() {
+            fetch('/mySpringBoot/api/student/appointments')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        allAppointments = data.data;
+                        renderAppointments();
+                    } else {
+                        document.getElementById('appointmentsContainer').innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">⚠️</div>
+                                <p>${data.message || '加载失败'}</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('加载预约失败:', error);
+                    document.getElementById('appointmentsContainer').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⚠️</div>
+                            <p>加载失败，请刷新重试</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        function filterByStatus(status) {
+            currentFilter = status;
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            renderAppointments();
+        }
+        
+        function renderAppointments() {
+            const container = document.getElementById('appointmentsContainer');
+            
+            let filtered = allAppointments;
+            if (currentFilter !== 'all') {
+                filtered = allAppointments.filter(a => a.status === currentFilter);
+            }
+            
+            if (filtered.length === 0) {
+                const message = currentFilter === 'all' ? '暂无预约记录' : '暂无此状态的预约';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <p>${message}</p>
+                        ${currentFilter === 'all' ? '<a href="/mySpringBoot/appointment" class="appointment-link">去预约</a>' : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            const statusMap = {
+                'PENDING': '待确认',
+                'CONFIRMED': '已确认',
+                'COMPLETED': '已完成',
+                'CANCELLED': '已取消'
+            };
+            
+            container.innerHTML = filtered.map(app => `
+                <div class="appointment-card ${app.status.toLowerCase()}">
+                    <div class="card-header">
+                        <h3> 预约课程</h3>
+                        <span class="status-badge ${app.status}">${statusMap[app.status]}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">📅 日期：</span>
+                            <span class="info-value">${app.appointmentDate}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🕐 时间：</span>
+                            <span class="info-value">${app.startTime.substring(0, 5)} - ${app.endTime.substring(0, 5)}</span>
+                        </div>
+                        ${app.location ? `
+                        <div class="info-row">
+                            <span class="info-label">📍 地点：</span>
+                            <span class="info-value">${app.location}</span>
+                        </div>
+                        ` : ''}
+                        ${app.notes ? `
+                        <div class="info-row">
+                            <span class="info-label"> 备注：</span>
+                            <span class="info-value">${app.notes}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="card-actions">
+                        ${app.status === 'PENDING' || app.status === 'CONFIRMED' ? `
+                            <button class="action-btn cancel-btn" onclick="cancelAppointment(${app.id})">❌ 取消预约</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function cancelAppointment(id) {
+            if (!confirm('确定要取消这个预约吗？')) return;
+            
+            fetch('/mySpringBoot/api/appointment/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('已取消');
+                    loadMyAppointments();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

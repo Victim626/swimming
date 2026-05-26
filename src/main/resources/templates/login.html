@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>游泳教练辅助平台 - 登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .test-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .test-info strong {
+            color: #333;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🏊 游泳教练辅助平台</h1>
+            <p>基于AI的智能教学管理系统</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" required placeholder="请输入用户名">
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required placeholder="请输入密码">
+            </div>
+
+            <button type="submit" class="login-btn">登录</button>
+            <div id="errorMessage" class="error-message"></div>
+        </form>
+
+
+
+        <div class="register-link">
+            还没有账号？<a href="/mySpringBoot/register">立即注册</a>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时重置按钮状态
+        window.addEventListener('load', function() {
+            const loginBtn = document.querySelector('.login-btn');
+            loginBtn.disabled = false;
+            loginBtn.textContent = '登录';
+            document.getElementById('errorMessage').style.display = 'none';
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('errorMessage');
+            const loginBtn = document.querySelector('.login-btn');
+            
+            // 前端验证
+            if (!username) {
+                errorDiv.textContent = '请输入用户名';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (!password) {
+                errorDiv.textContent = '请输入密码';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // 禁用按钮，防止重复提交
+            loginBtn.disabled = true;
+            loginBtn.textContent = '登录中...';
+            errorDiv.style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            fetch('/mySpringBoot/login', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    // 保存用户信息到 sessionStorage
+                    sessionStorage.setItem('currentUser', JSON.stringify(data.data));
+                    // 登录成功，跳转到主页
+                    window.location.href = '/mySpringBoot/dashboard';
+                } else {
+                    errorDiv.textContent = data.message || '登录失败';
+                    errorDiv.style.display = 'block';
+                    // 恢复按钮
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '登录';
+                }
+            })
+            .catch(error => {
+                console.error('登录错误:', error);
+                errorDiv.textContent = '网络错误，请稍后重试';
+                errorDiv.style.display = 'block';
+                // 恢复按钮
+                loginBtn.disabled = false;
+                loginBtn.textContent = '登录';
+            });
+        });
+        
+        // 回车键提交表单
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>

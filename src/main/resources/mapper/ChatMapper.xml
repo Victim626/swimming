@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usbtj.springboot.swimming.mapper.ChatMapper">
+
+    <insert id="insertMessage" parameterType="com.usbtj.springboot.swimming.entity.ChatMessage" 
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO chat_messages (sender_id, receiver_id, content, message_type, is_read, send_time)
+        VALUES (#{senderId}, #{receiverId}, #{content}, #{messageType}, #{isRead}, #{sendTime})
+    </insert>
+
+    <select id="getChatHistory" resultType="com.usbtj.springboot.swimming.entity.ChatMessage">
+        SELECT cm.*, 
+               u1.real_name as senderName, 
+               u2.real_name as receiverName
+        FROM chat_messages cm
+        LEFT JOIN users u1 ON cm.sender_id = u1.id
+        LEFT JOIN users u2 ON cm.receiver_id = u2.id
+        WHERE (cm.sender_id = #{userId1} AND cm.receiver_id = #{userId2})
+           OR (cm.sender_id = #{userId2} AND cm.receiver_id = #{userId1})
+        ORDER BY cm.send_time ASC
+    </select>
+
+    <select id="getContactList" resultType="java.lang.Long">
+        SELECT DISTINCT 
+            CASE 
+                WHEN sender_id = #{userId} THEN receiver_id
+                ELSE sender_id
+            END as contact_id
+        FROM chat_messages
+        WHERE sender_id = #{userId} OR receiver_id = #{userId}
+        ORDER BY contact_id
+    </select>
+
+    <update id="markAsRead">
+        UPDATE chat_messages 
+        SET is_read = 1
+        WHERE sender_id = #{senderId} 
+          AND receiver_id = #{receiverId}
+          AND is_read = 0
+    </update>
+
+    <select id="getUnreadCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM chat_messages
+        WHERE receiver_id = #{receiverId}
+          AND is_read = 0
+    </select>
+
+</mapper>

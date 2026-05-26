@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usbtj.springboot.swimming.mapper.CoachStudentMapper">
+
+    <resultMap id="coachStudentRelationMap" type="com.usbtj.springboot.swimming.entity.CoachStudentRelation">
+        <id property="id" column="id"/>
+        <result property="coachId" column="coach_id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="relationshipType" column="relationship_type"/>
+        <result property="startDate" column="start_date"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="studentUsername" column="student_username"/>
+        <result property="studentRealName" column="student_real_name"/>
+        <result property="studentPhone" column="student_phone"/>
+        <result property="studentEmail" column="student_email"/>
+        <result property="studentAge" column="student_age"/>
+        <result property="studentGender" column="student_gender"/>
+        <result property="coachUsername" column="coach_username"/>
+        <result property="coachRealName" column="coach_real_name"/>
+        <result property="coachPhone" column="coach_phone"/>
+        <result property="coachEmail" column="coach_email"/>
+    </resultMap>
+
+    <select id="findByCoachId" resultMap="coachStudentRelationMap">
+        SELECT 
+            r.*,
+            u.username as student_username,
+            sp.real_name as student_real_name,
+            sp.phone as student_phone,
+            sp.email as student_email,
+            sp.age as student_age,
+            sp.gender as student_gender
+        FROM coach_student_relations r
+        LEFT JOIN users u ON r.student_id = u.id
+        LEFT JOIN student_profiles sp ON r.student_id = sp.user_id
+        WHERE r.coach_id = #{coachId} AND r.status = 1
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="findByStudentId" resultMap="coachStudentRelationMap">
+        SELECT 
+            r.*,
+            u.username as coach_username,
+            cp.real_name as coach_real_name,
+            cp.phone as coach_phone,
+            cp.email as coach_email
+        FROM coach_student_relations r
+        LEFT JOIN users u ON r.coach_id = u.id
+        LEFT JOIN coach_profiles cp ON r.coach_id = cp.user_id
+        WHERE r.student_id = #{studentId} AND r.status = 1
+        ORDER BY r.created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO coach_student_relations (
+            coach_id, student_id, relationship_type, start_date, status
+        ) VALUES (
+            #{coachId}, #{studentId}, #{relationshipType}, #{startDate}, #{status}
+        )
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM coach_student_relations WHERE id = #{id}
+    </delete>
+
+    <select id="findByCoachAndStudent" resultMap="coachStudentRelationMap">
+        SELECT 
+            r.*,
+            u.username as student_username,
+            sp.real_name as student_real_name,
+            sp.phone as student_phone,
+            sp.email as student_email,
+            sp.age as student_age,
+            sp.gender as student_gender
+        FROM coach_student_relations r
+        LEFT JOIN users u ON r.student_id = u.id
+        LEFT JOIN student_profiles sp ON r.student_id = sp.user_id
+        WHERE r.coach_id = #{coachId} AND r.student_id = #{studentId}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE coach_student_relations SET status = #{status} WHERE id = #{id}
+    </update>
+
+</mapper>

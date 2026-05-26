@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程预约 - 游泳教练平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* 头部导航 */
+        .header { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn { width: 40px; height: 40px; border: none; background: #f0f0f0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 20px; }
+        .back-btn:hover { background: #e0e0e0; transform: translateX(-3px); }
+        .header h1 { color: #333; font-size: 24px; }
+        .header p { color: #666; margin-top: 5px; font-size: 14px; }
+        
+        /* 日期选择器 */
+        .date-selector { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; }
+        .date-selector label { font-weight: bold; color: #333; white-space: nowrap; }
+        .date-selector input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; flex: 1; }
+        
+        /* 时间段卡片 */
+        .slot-card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; position: relative; overflow: hidden; }
+        .slot-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .slot-card.full { background: #f5f5f5; opacity: 0.7; }
+        .slot-card.unavailable { background: #fff3f3; border-left: 4px solid #f44336; }
+        .slot-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .slot-header h3 { color: #667eea; font-size: 18px; }
+        .slot-badge { padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .slot-badge.available { background: #e8f5e9; color: #4caf50; }
+        .slot-badge.full { background: #ffebee; color: #f44336; }
+        .slot-badge.closed { background: #ffcdd2; color: #d32f2f; }
+        .slot-time { color: #666; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .slot-time::before { content: '🕐'; }
+        .slot-info { color: #666; font-size: 14px; margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 8px; }
+        .book-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; margin-top: 15px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); }
+        .book-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+        .book-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        /* 弹窗优化 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; backdrop-filter: blur(4px); }
+        .modal.show { display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }
+        .modal-header h2 { color: #333; font-size: 20px; }
+        .close-btn { width: 36px; height: 36px; border: none; background: #f5f5f5; border-radius: 50%; cursor: pointer; color: #999; font-size: 24px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .close-btn:hover { background: #e0e0e0; color: #333; transform: rotate(90deg); }
+        
+        /* 表单优化 */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-size: 14px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; transition: all 0.3s; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .form-group input[readonly] { background: #f5f5f5; cursor: not-allowed; }
+        
+        .submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; margin-top: 10px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+        
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+        .empty-state p { color: #666; font-size: 16px; line-height: 1.6; }
+        
+        /* 加载动画 */
+        .loading { text-align: center; padding: 40px; color: white; }
+        .loading::after { content: ''; display: inline-block; width: 30px; height: 30px; border: 3px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.location.href='/mySpringBoot/dashboard'" title="返回">←</button>
+                <div>
+                    <h1>📅 课程预约</h1>
+                    <p>选择日期和时间段进行预约</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="date-selector">
+            <label>📆 选择日期：</label>
+            <input type="date" id="selectedDate">
+        </div>
+        
+        <div id="slotsContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <p>请选择日期查看可预约时间段</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 预约弹窗 -->
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>预约课程</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="bookForm">
+                <div class="form-group">
+                    <label>时间段</label>
+                    <input type="text" id="timeSlotDisplay" readonly>
+                </div>
+                <div class="form-group">
+                    <label>预约日期</label>
+                    <input type="text" id="appointmentDateDisplay" readonly>
+                </div>
+                <div class="form-group">
+                    <label>地点（选填）</label>
+                    <input type="text" id="location" placeholder="例如：XX游泳馆">
+                </div>
+                <div class="form-group">
+                    <label>备注（选填）</label>
+                    <textarea id="notes" rows="3" placeholder="例如：想学习自由泳"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">确认预约</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let timeSlots = [];
+        let selectedSlot = null;
+        let currentBookings = [];
+        let myCoachId = null; // 我的教练ID
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            // 使用本地时间获取今天的日期
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            
+            console.log('当前日期（今天）:', todayStr);
+            
+            // 计算明天日期（今天+1天）
+            const tomorrow = new Date(year, now.getMonth(), now.getDate() + 1);
+            const tomorrowYear = tomorrow.getFullYear();
+            const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
+            const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
+            
+            console.log('最小可选日期（明天）:', tomorrowStr);
+            
+            // 默认选择明天的日期
+            document.getElementById('selectedDate').value = tomorrowStr;
+            // 设置最小可选日期为明天
+            document.getElementById('selectedDate').min = tomorrowStr;
+            
+            loadMyCoach();
+            loadTimeSlots();
+            
+            document.getElementById('selectedDate').addEventListener('change', function() {
+                loadAppointments();
+            });
+        });
+        
+        function loadMyCoach() {
+            // 获取学员关联的教练
+            fetch('/mySpringBoot/api/student/my-coach')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200 && data.data) {
+                        myCoachId = data.data.id;
+                        loadAppointments();
+                    } else {
+                        document.getElementById('slotsContainer').innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon"></div>
+                                <p>您还没有关联教练，请联系管理员</p>
+                            </div>
+                        `;
+                    }
+                });
+        }
+        
+        function loadTimeSlots() {
+            fetch('/mySpringBoot/api/time-slots')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        timeSlots = data.data;
+                        renderSlots();
+                    }
+                });
+        }
+        
+        function loadAppointments() {
+            const date = document.getElementById('selectedDate').value;
+            if (!date || !myCoachId) return;
+            
+            fetch(`/mySpringBoot/api/appointments/student?coachId=${myCoachId}&date=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        currentBookings = data.data;
+                        renderSlots();
+                    }
+                });
+        }
+        
+        function renderSlots() {
+            const container = document.getElementById('slotsContainer');
+            
+            if (timeSlots.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⏰</div>
+                        <p>暂无可用时间段</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const date = document.getElementById('selectedDate').value;
+            
+            container.innerHTML = timeSlots.map(slot => {
+                // 检查是否是教练设置的不可用时间段
+                const isUnavailable = currentBookings.some(b => 
+                    b.studentId === myCoachId && 
+                    b.startTime === slot.startTime && 
+                    b.endTime === slot.endTime &&
+                    b.notes === '教练设置不可用'
+                );
+                
+                const bookedCount = currentBookings.filter(b => 
+                    b.startTime === slot.startTime && 
+                    b.endTime === slot.endTime &&
+                    !(b.studentId === myCoachId && b.notes === '教练设置不可用')
+                ).length;
+                
+                const isFull = isUnavailable || bookedCount >= slot.maxCapacity;
+                
+                return `
+                    <div class="slot-card ${isUnavailable ? 'unavailable' : (isFull ? 'full' : '')}">
+                        <div class="slot-header">
+                            <h3>${slot.slotName}</h3>
+                            <span class="slot-badge ${isUnavailable ? 'closed' : (isFull ? 'full' : 'available')}">
+                                ${isUnavailable ? '教练已关闭' : (isFull ? '已满' : `可预约 ${slot.maxCapacity - bookedCount}/${slot.maxCapacity}`)}
+                            </span>
+                        </div>
+                        <div class="slot-time">${slot.startTime.substring(0, 5)} - ${slot.endTime.substring(0, 5)}</div>
+                        <div class="slot-info">
+                            ${isUnavailable ? '<p style="color: #f44336; margin: 0;">⚠️ 该时间段教练已设置为不可用</p>' : 
+                              (isFull ? '<p style="color: #ff9800; margin: 0;">⏰ 该时间段已满，请选择其他时间段</p>' : 
+                               `<p style="color: #4caf50; margin: 0;">✅ 当前可预约，点击按钮即可预约</p>`)}
+                        </div>
+                        <button class="book-btn" ${isFull ? 'disabled' : ''} 
+                                onclick="openBookModal(${slot.id}, '${slot.startTime}', '${slot.endTime}', '${slot.slotName}')">
+                            ${isUnavailable ? '🚫 已关闭' : (isFull ? '❌ 已满' : '✨ 预约此时间段')}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function openBookModal(slotId, startTime, endTime, slotName) {
+            selectedSlot = { id: slotId, startTime, endTime, slotName };
+            
+            document.getElementById('timeSlotDisplay').value = `${slotName} ${startTime.substring(0, 5)} - ${endTime.substring(0, 5)}`;
+            document.getElementById('appointmentDateDisplay').value = document.getElementById('selectedDate').value;
+            
+            document.getElementById('bookModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('bookModal').classList.remove('show');
+            document.getElementById('bookForm').reset();
+        }
+        
+        document.getElementById('bookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!selectedSlot) return;
+            
+            const location = document.getElementById('location').value;
+            const notes = document.getElementById('notes').value;
+            
+            fetch('/mySpringBoot/api/appointment/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    coachId: myCoachId,  // 使用学员关联的教练ID
+                    appointmentDate: document.getElementById('selectedDate').value,
+                    startTime: selectedSlot.startTime,
+                    endTime: selectedSlot.endTime,
+                    location: location,
+                    notes: notes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('预约成功！');
+                    closeModal();
+                    loadAppointments();
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

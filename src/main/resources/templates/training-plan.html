@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>训练计划管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', sans-serif; background: #f5f7fa; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn { width: 40px; height: 40px; border: none; background: #f0f0f0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 20px; }
+        .back-btn:hover { background: #e0e0e0; transform: translateX(-3px); }
+        .header h1 { color: #333; font-size: 24px; }
+        .header p { color: #666; margin-top: 5px; }
+        
+        .student-list { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .student-list h2 { color: #333; margin-bottom: 15px; font-size: 18px; }
+        .student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; }
+        .student-item:hover { background: #f8f9fa; border-color: #667eea; }
+        .student-item.active { background: #667eea; color: white; border-color: #667eea; }
+        .student-info h3 { font-size: 16px; margin-bottom: 5px; }
+        .student-info p { font-size: 12px; color: #666; }
+        .student-item.active .student-info p { color: #e0e0e0; }
+        
+        .add-student-btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .add-student-btn:hover { background: #5568d3; }
+        
+        .plan-section { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .plan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .plan-header h2 { color: #333; font-size: 18px; }
+        .create-plan-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .create-plan-btn:hover { transform: translateY(-2px); }
+        
+        .plan-list { display: grid; gap: 15px; }
+        .plan-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; }
+        .plan-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .plan-card-header h3 { color: #333; font-size: 16px; }
+        .plan-status { padding: 5px 10px; border-radius: 15px; font-size: 12px; }
+        .status-draft { background: #e3f2fd; color: #1976d2; }
+        .status-active { background: #e8f5e9; color: #388e3c; }
+        .status-completed { background: #f5f5f5; color: #757575; }
+        .plan-details { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .plan-details p { margin: 5px 0; }
+        .plan-actions { display: flex; gap: 10px; }
+        .plan-actions button { padding: 5px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .btn-edit { background: #667eea; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .btn-detail { background: #3498db; color: white; }
+        
+        /* 按天显示 */
+        .day-list { display: grid; gap: 15px; }
+        .day-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: #f9f9f9; }
+        .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .day-header h3 { color: #333; font-size: 16px; }
+        .day-content { font-size: 14px; color: #666; }
+        .day-content p { margin: 5px 0; }
+        .check-btn { padding: 5px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .check-btn.checked { background: #27ae60; color: white; }
+        .check-btn.unchecked { background: #e0e0e0; color: #666; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 0; border-radius: 10px; width: 90%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 1px solid #e0e0e0; }
+        .modal-header h2 { color: #333; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; }
+        .modal-body { padding: 30px; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 20px 30px; border-top: 1px solid #e0e0e0; background: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; font-size: 14px; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .cycle-info { background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 14px; color: #666; }
+        .cycle-info strong { color: #667eea; }
+        .submit-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .submit-btn:hover { transform: translateY(-2px); }
+        .empty-state { text-align: center; padding: 40px; color: #666; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 10px; }
+        
+        .detail-content { padding: 20px 30px; overflow-y: auto; flex: 1; }
+        .detail-footer { padding: 15px 30px; border-top: 1px solid #e0e0e0; background: white; text-align: right; }
+        .plan-info { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .plan-info p { margin: 8px 0; color: #666; }
+        .plan-info strong { color: #333; }
+        .day-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+        .day-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .day-header h3 { margin: 0; font-size: 16px; }
+        .day-content { padding: 15px 20px; }
+        .training-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .training-row:last-child { border-bottom: none; }
+        .field-item { display: flex; flex-direction: column; gap: 5px; }
+        .field-label { font-size: 12px; color: #999; }
+        .field-value { font-size: 14px; color: #333; font-weight: 500; }
+        .check-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .check-badge.checked { background: #e8f5e9; color: #4caf50; }
+        .check-badge.unchecked { background: #f5f5f5; color: #999; }
+        .edit-day-btn { padding: 6px 15px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .edit-day-btn:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.location.href='/mySpringBoot/dashboard'" title="返回">←</button>
+                <div>
+                    <h1>🏊 训练计划管理</h1>
+                    <p>为学员制定个性化训练计划，按天分配训练任务</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="student-list">
+            <h2>我的学员</h2>
+            <div id="studentList">
+                <!-- 学员列表将通过JavaScript动态加载 -->
+            </div>
+            <button class="add-student-btn" onclick="showAddStudentModal()">+ 添加学员</button>
+        </div>
+
+        <div class="plan-section">
+            <div class="plan-header">
+                <h2 id="selectedStudentTitle">请选择学员</h2>
+                <button class="create-plan-btn" onclick="showCreatePlanModal()" id="createPlanBtn" disabled>+ 创建计划</button>
+            </div>
+            <div id="planList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>请先选择学员</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加学员模态框 -->
+    <div class="modal" id="addStudentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加学员</h2>
+                <button class="close-btn" onclick="closeModal('addStudentModal')">&times;</button>
+            </div>
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label>选择学员 <span style="color: red;">*</span></label>
+                    <select id="studentSelect" required>
+                        <option value="">-- 请选择学员 --</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">确认添加</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 创建计划模态框 -->
+    <div class="modal" id="planModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>创建训练计划</h2>
+                <button class="close-btn" onclick="closeModal('planModal')">&times;</button>
+            </div>
+            <form id="planForm" class="modal-body">
+                <input type="hidden" id="planId" value="">
+                <div class="form-group">
+                    <label>计划名称 <span style="color: red;">*</span></label>
+                    <input type="text" id="planName" required placeholder="例如：自由泳基础训练">
+                </div>
+                <div class="form-group">
+                    <label>计划描述</label>
+                    <textarea id="planDescription" placeholder="描述训练目标和内容..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>开始日期 <span style="color: red;">*</span></label>
+                    <input type="date" id="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label>计划周期（天数）<span style="color: red;">*</span></label>
+                    <input type="number" id="planDays" min="5" max="14" required placeholder="5-14天" onchange="generateDayForms()">
+                    <div class="cycle-info">
+                        <strong>提示：</strong>最短5天，最长14天。每天可设置不同的训练内容。
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>计划状态</label>
+                    <select id="planStatus">
+                        <option value="DRAFT">草稿</option>
+                        <option value="ACTIVE">进行中</option>
+                        <option value="COMPLETED">已完成</option>
+                    </select>
+                </div>
+                
+                <div id="dayFormsContainer" style="margin-top: 20px; border-top: 2px solid #e0e0e0; padding-top: 20px;">
+                    <!-- 动态生成每天的表单 -->
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="submit" form="planForm" class="submit-btn">创建计划</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看/编辑计划详情模态框 -->
+    <div class="modal" id="planDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="detailModalTitle">计划详情</h2>
+                <button class="close-btn" onclick="closeModal('planDetailModal')">&times;</button>
+            </div>
+            <div id="planDetailContent" class="detail-content">
+                <!-- 动态加载 -->
+            </div>
+            <div class="detail-footer">
+                <button class="submit-btn" style="width: auto; padding: 10px 30px;" onclick="closeModal('planDetailModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedStudentId = null;
+        let selectedStudentName = '';
+
+        window.addEventListener('DOMContentLoaded', function() {
+            loadStudents();
+        });
+
+        function loadStudents() {
+            fetch('/mySpringBoot/api/training-plan/students')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        renderStudentList(data.data);
+                    }
+                });
+        }
+
+        function renderStudentList(students) {
+            const container = document.getElementById('studentList');
+            if (students.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>暂无学员，请添加学员</p></div>';
+                return;
+            }
+
+            container.innerHTML = students.map(student => `
+                <div class="student-item" onclick="selectStudent(${student.studentId}, '${(student.studentRealName || student.studentUsername || '学员' + student.studentId).replace(/'/g, "\\'")}')">
+                    <div class="student-info">
+                        <h3>${student.studentRealName || student.studentUsername || '学员' + student.studentId}</h3>
+                        <p>性别：${student.studentGender || '-'} | 年龄：${student.studentAge || '-'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectStudent(studentId, studentName) {
+            selectedStudentId = studentId;
+            selectedStudentName = studentName || '学员' + studentId;
+
+            document.querySelectorAll('.student-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            document.getElementById('selectedStudentTitle').textContent = `学员：${selectedStudentName} 的训练计划`;
+            document.getElementById('createPlanBtn').disabled = false;
+
+            loadPlans();
+        }
+
+        function loadPlans() {
+            if (!selectedStudentId) return;
+
+            fetch(`/mySpringBoot/api/training-plan/list?studentId=${selectedStudentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        renderPlanList(data.data);
+                    } else {
+                        document.getElementById('planList').innerHTML = `<div class="empty-state"><div class="empty-state-icon"></div><p>${data.message}</p></div>`;
+                    }
+                });
+        }
+
+        function renderPlanList(plans) {
+            const container = document.getElementById('planList');
+            if (plans.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>暂无训练计划</p></div>';
+                return;
+            }
+
+            container.innerHTML = '<div class="plan-list">' + plans.map(plan => {
+                const statusMap = {
+                    'DRAFT': { text: '草稿', class: 'status-draft' },
+                    'ACTIVE': { text: '进行中', class: 'status-active' },
+                    'COMPLETED': { text: '已完成', class: 'status-completed' }
+                };
+                const status = statusMap[plan.status] || statusMap['DRAFT'];
+                const days = Math.ceil((new Date(plan.endDate) - new Date(plan.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+
+                return `
+                    <div class="plan-card">
+                        <div class="plan-card-header">
+                            <h3>${plan.planName}</h3>
+                            <span class="plan-status ${status.class}">${status.text}</span>
+                        </div>
+                        <div class="plan-details">
+                            <p><strong>描述：</strong>${plan.description || '无'}</p>
+                            <p><strong>周期：</strong>${plan.startDate} 至 ${plan.endDate}（${days}天）</p>
+                        </div>
+                        <div class="plan-actions">
+                            <button class="btn-detail" onclick="viewPlanDetail(${plan.id})">查看详情</button>
+                            <button class="btn-edit" onclick="editPlan(${plan.id})">编辑</button>
+                            <button class="btn-delete" onclick="deletePlan(${plan.id})">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('') + '</div>';
+        }
+
+        function viewPlanDetail(planId) {
+            fetch(`/mySpringBoot/api/training-plan/detail?id=${planId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const responseData = data.data;
+                        const plan = responseData.plan || responseData;
+                        const details = responseData.details || [];
+                        
+                        document.getElementById('detailModalTitle').textContent = `${plan.planName || '未知计划'} - 训练详情`;
+                        
+                        let html = `
+                            <div class="plan-info">
+                                <p><strong>计划描述：</strong>${plan.description || '无'}</p>
+                                <p><strong>周期：</strong>${plan.startDate || '-'} 至 ${plan.endDate || '-'}</p>
+                                <p><strong>状态：</strong>${plan.status || '-'}</p>
+                            </div>
+                        `;
+                        
+                        if (details && details.length > 0) {
+                            html += '<div class="day-list">';
+                            
+                            details.forEach(detail => {
+                                html += `
+                                    <div class="day-card">
+                                        <div class="day-header">
+                                            <h3>📅 第 ${detail.dayNumber} 天 - ${detail.trainingDate}</h3>
+                                            <button class="edit-day-btn" onclick="editDayDetail(${detail.id})">️ 编辑</button>
+                                        </div>
+                                        <div class="day-content">
+                                            <div class="training-row">
+                                                <div class="field-item">
+                                                    <span class="field-label">强度等级</span>
+                                                    <span class="field-value">${detail.intensity || '未设置'}</span>
+                                                </div>
+                                                <div class="field-item">
+                                                    <span class="field-label">计划内容</span>
+                                                    <span class="field-value">${detail.notes || '无'}</span>
+                                                </div>
+                                                <div class="field-item">
+                                                    <span class="field-label">打卡状态</span>
+                                                    <span class="check-badge ${detail.isChecked ? 'checked' : 'unchecked'}">
+                                                        ${detail.isChecked ? '✓ 已打卡' : '○ 未打卡'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            html += '</div>';
+                        } else {
+                            html += '<p style="margin-top: 20px; color: #999;">暂无训练内容</p>';
+                        }
+                        
+                        document.getElementById('planDetailContent').innerHTML = html;
+                        document.getElementById('planDetailModal').classList.add('show');
+                    }
+                });
+        }
+
+        function toggleCheck(detailId, currentStatus) {
+            const isChecked = !currentStatus;
+            fetch(`/mySpringBoot/api/training-plan/check/${detailId}?isChecked=${isChecked}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert(isChecked ? '打卡成功' : '已取消打卡');
+                    // 重新加载详情
+                    viewPlanDetail(selectedPlanId);
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        let selectedPlanId = null;
+
+        function showAddStudentModal() {
+            fetch('/mySpringBoot/api/training-plan/all-students')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const select = document.getElementById('studentSelect');
+                        select.innerHTML = '<option value="">-- 请选择学员 --</option>';
+                        data.data.forEach(student => {
+                            const option = document.createElement('option');
+                            option.value = student.id;
+                            option.textContent = (student.realName || student.username) + ' (ID: ' + student.id + ')';
+                            select.appendChild(option);
+                        });
+                        document.getElementById('addStudentModal').classList.add('show');
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        }
+
+        function showCreatePlanModal() {
+            document.getElementById('planForm').reset();
+            document.getElementById('planId').value = '';
+            document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('dayFormsContainer').innerHTML = '';
+            document.getElementById('planModal').classList.add('show');
+        }
+        
+        function generateDayForms() {
+            const days = parseInt(document.getElementById('planDays').value);
+            if (!days || days < 5 || days > 14) {
+                document.getElementById('dayFormsContainer').innerHTML = '';
+                return;
+            }
+            
+            const startDate = document.getElementById('startDate').value || new Date().toISOString().split('T')[0];
+            const start = new Date(startDate);
+            
+            let html = '<h3 style="margin-bottom: 15px; color: #333;">每天训练内容</h3>';
+            
+            for (let i = 1; i <= days; i++) {
+                const date = new Date(start);
+                date.setDate(date.getDate() + i - 1);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                html += `
+                    <div class="day-form" style="background: #f9f9f9; padding: 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <h4 style="margin-bottom: 10px; color: #667eea;">📅 第 ${i} 天 - ${dateStr}</h4>
+                        <input type="hidden" name="day_${i}_date" value="${dateStr}">
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="form-group">
+                                <label>强度等级</label>
+                                <select name="day_${i}_intensity">
+                                    <option value="">-- 请选择 --</option>
+                                    <option value="低">低</option>
+                                    <option value="中等">中等</option>
+                                    <option value="高">高</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>计划内容</label>
+                            <textarea name="day_${i}_notes" rows="2" placeholder="今天的训练内容..."></textarea>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('dayFormsContainer').innerHTML = html;
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('studentSelect').value;
+            if (!studentId) {
+                alert('请选择学员');
+                return;
+            }
+            
+            fetch('/mySpringBoot/api/training-plan/relation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `studentId=${studentId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('添加成功');
+                    closeModal('addStudentModal');
+                    loadStudents();
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+
+        document.getElementById('planForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const planName = document.getElementById('planName').value;
+            const description = document.getElementById('planDescription').value;
+            const startDate = document.getElementById('startDate').value;
+            const days = parseInt(document.getElementById('planDays').value);
+            const status = document.getElementById('planStatus').value;
+
+            if (days < 5 || days > 14) {
+                alert('计划周期必须在5-14天之间');
+                return;
+            }
+            
+            // 收集每天的数据
+            const dayDetails = [];
+            for (let i = 1; i <= days; i++) {
+                dayDetails.push({
+                    dayNumber: i,
+                    trainingDate: document.querySelector(`[name="day_${i}_date"]`).value,
+                    intensity: document.querySelector(`[name="day_${i}_intensity"]`).value,
+                    notes: document.querySelector(`[name="day_${i}_notes"]`).value || ''
+                });
+            }
+
+            const planId = document.getElementById('planId').value;
+            const url = planId ? '/mySpringBoot/api/training-plan/update' : '/mySpringBoot/api/training-plan/create';
+            
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: planId || undefined,
+                    studentId: selectedStudentId,
+                    planName: planName,
+                    description: description,
+                    startDate: startDate,
+                    days: days,
+                    status: status,
+                    dayDetails: dayDetails
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert(planId ? '保存成功' : '创建成功');
+                    document.getElementById('planId').value = '';
+                    closeModal('planModal');
+                    loadPlans();
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+
+        function editPlan(id) {
+            fetch(`/mySpringBoot/api/training-plan/detail?id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const responseData = data.data;
+                        const plan = responseData.plan || responseData;
+                        
+                        document.getElementById('detailModalTitle').textContent = '编辑训练计划';
+                        document.getElementById('planId').value = plan.id;
+                        document.getElementById('planName').value = plan.planName || '';
+                        document.getElementById('planDescription').value = plan.description || '';
+                        document.getElementById('startDate').value = plan.startDate || '';
+                        const days = plan.startDate && plan.endDate ? Math.ceil((new Date(plan.endDate) - new Date(plan.startDate)) / (1000 * 60 * 60 * 24)) + 1 : 5;
+                        document.getElementById('planDays').value = days;
+                        document.getElementById('planStatus').value = plan.status || 'DRAFT';
+                        document.getElementById('planModal').classList.add('show');
+                    }
+                });
+        }
+
+        function editDayDetail(detailId) {
+            fetch(`/mySpringBoot/api/training-plan/detail-detail?id=${detailId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const detail = data.data;
+                        const intensitySelect = document.createElement('select');
+                        intensitySelect.innerHTML = `
+                            <option value="低" ${detail.intensity === '低' ? 'selected' : ''}>低</option>
+                            <option value="中等" ${detail.intensity === '中等' ? 'selected' : ''}>中等</option>
+                            <option value="高" ${detail.intensity === '高' ? 'selected' : ''}>高</option>
+                        `;
+                        
+                        const newContent = `
+                            <div class="day-card">
+                                <div class="day-header">
+                                    <h3>📅 第 ${detail.dayNumber} 天 - ${detail.trainingDate}</h3>
+                                </div>
+                                <div class="day-content">
+                                    <div class="form-group">
+                                        <label>强度等级</label>
+                                        <select id="editIntensity">${intensitySelect.innerHTML}</select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>计划内容</label>
+                                        <textarea id="editNotes" rows="4">${detail.notes || ''}</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>打卡状态</label>
+                                        <select id="editCheckStatus">
+                                            <option value="false" ${!detail.isChecked ? 'selected' : ''}>未打卡</option>
+                                            <option value="true" ${detail.isChecked ? 'selected' : ''}>已打卡</option>
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                        <button class="submit-btn" style="flex: 1;" onclick="saveDayDetail(${detail.id})">保存</button>
+                                        <button class="submit-btn" style="flex: 1; background: #999;" onclick="viewPlanDetail(${detail.planId})">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        document.getElementById('planDetailContent').innerHTML = newContent;
+                    }
+                });
+        }
+
+        function saveDayDetail(detailId) {
+            const intensity = document.getElementById('editIntensity').value;
+            const notes = document.getElementById('editNotes').value;
+            const isChecked = document.getElementById('editCheckStatus').value === 'true';
+            
+            fetch('/mySpringBoot/api/training-plan/update-detail', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: detailId,
+                    intensity: intensity,
+                    notes: notes,
+                    isChecked: isChecked
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('保存成功');
+                    viewPlanDetail(data.data.planId);
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function deletePlan(id) {
+            if (!confirm('确定删除该计划吗？')) return;
+
+            fetch('/mySpringBoot/api/training-plan/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${id}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('删除成功');
+                    loadPlans();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

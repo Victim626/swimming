@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usbtj.springboot.swimming.mapper.CommentMapper">
+
+    <resultMap id="commentMap" type="com.usbtj.springboot.swimming.entity.Comment">
+        <id property="id" column="id"/>
+        <result property="postId" column="post_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="content" column="content"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="deleted" column="is_deleted"/>
+        <result property="username" column="username"/>
+        <result property="realName" column="real_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="likedByCurrentUser" column="liked_by_current_user"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO post_comments (
+            post_id, user_id, content, parent_id
+        ) VALUES (
+            #{postId}, #{userId}, #{content}, #{parentId}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE post_comments
+        SET content = #{content},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="softDelete">
+        UPDATE post_comments
+        SET content = '[已删除]',
+            is_deleted = 1,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="commentMap">
+        SELECT c.*, u.username, u.real_name, u.avatar,
+               CASE WHEN pcl.user_id IS NULL THEN FALSE ELSE TRUE END AS liked_by_current_user
+        FROM post_comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        LEFT JOIN post_comment_likes pcl ON c.id = pcl.comment_id AND pcl.user_id = #{currentUserId}
+        WHERE c.id = #{id}
+    </select>
+
+    <select id="findByPostId" resultMap="commentMap">
+        SELECT c.*, u.username, u.real_name, u.avatar,
+               CASE WHEN pcl.user_id IS NULL THEN FALSE ELSE TRUE END AS liked_by_current_user
+        FROM post_comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        LEFT JOIN post_comment_likes pcl ON c.id = pcl.comment_id AND pcl.user_id = #{currentUserId}
+        WHERE c.post_id = #{postId}
+        ORDER BY COALESCE(c.parent_id, c.id), c.created_at ASC
+    </select>
+
+    <insert id="insertLike">
+        INSERT IGNORE INTO post_comment_likes (comment_id, user_id)
+        VALUES (#{commentId}, #{userId})
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM post_comment_likes
+        WHERE comment_id = #{commentId} AND user_id = #{userId}
+    </delete>
+
+    <update id="incrementLikeCount">
+        UPDATE post_comments SET like_count = like_count + 1 WHERE id = #{commentId}
+    </update>
+
+    <update id="decrementLikeCount">
+        UPDATE post_comments SET like_count = GREATEST(like_count - 1, 0) WHERE id = #{commentId}
+    </update>
+
+</mapper>

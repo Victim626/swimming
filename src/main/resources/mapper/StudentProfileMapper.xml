@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usbtj.springboot.swimming.mapper.StudentProfileMapper">
+
+    <insert id="insert" parameterType="com.usbtj.springboot.swimming.entity.StudentProfile" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO student_profiles (
+            user_id, real_name, phone, email,
+            gender, age
+        ) VALUES (
+            #{userId}, #{realName}, #{phone}, #{email},
+            #{gender}, #{age}
+        )
+    </insert>
+
+    <select id="findByUserId" resultType="com.usbtj.springboot.swimming.entity.StudentProfile">
+        SELECT * FROM student_profiles WHERE user_id = #{userId}
+    </select>
+
+    <update id="update" parameterType="com.usbtj.springboot.swimming.entity.StudentProfile">
+        UPDATE student_profiles
+        SET real_name = #{realName},
+            phone = #{phone},
+            email = #{email},
+            avatar = #{avatar},
+            gender = #{gender},
+            age = #{age},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

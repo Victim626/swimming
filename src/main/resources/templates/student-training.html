@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的训练计划</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn { width: 40px; height: 40px; border: none; background: #f0f0f0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 20px; }
+        .back-btn:hover { background: #e0e0e0; transform: translateX(-3px); }
+        .header h1 { color: #333; font-size: 24px; }
+        .header p { color: #666; margin-top: 5px; }
+        .today-date { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center; font-size: 18px; color: #667eea; font-weight: bold; }
+        .nav-tabs { display: flex; gap: 10px; margin-top: 15px; }
+        .nav-tab { flex: 1; padding: 12px; background: #f5f5f5; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        .nav-tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .nav-tab:hover:not(.active) { background: #e8e8e8; }
+        
+        .training-list { display: grid; gap: 15px; }
+        .training-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .training-card:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .training-card.checked { background: #e8f5e9; border: 2px solid #4caf50; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-header h3 { color: #333; font-size: 16px; }
+        .day-badge { background: #667eea; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; }
+        .training-content { margin-bottom: 15px; }
+        .training-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #666; }
+        .training-item strong { color: #333; }
+        .check-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; }
+        .check-btn.checked { background: #4caf50; color: white; }
+        .check-btn.unchecked { background: #667eea; color: white; }
+        .check-btn:hover { opacity: 0.9; }
+        
+        .plan-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; cursor: pointer; transition: all 0.3s; }
+        .plan-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .plan-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .plan-card-header h3 { color: #333; font-size: 18px; }
+        .plan-status { padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .plan-status.DRAFT { background: #f5f5f5; color: #999; }
+        .plan-status.ACTIVE { background: #e3f2fd; color: #2196f3; }
+        .plan-status.COMPLETED { background: #e8f5e9; color: #4caf50; }
+        .plan-info { color: #666; font-size: 14px; }
+        .plan-info p { margin: 5px 0; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .empty-state-icon { font-size: 48px; margin-bottom: 15px; }
+        .empty-state p { color: #666; font-size: 16px; }
+        
+        .back-btn { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-size: 14px; }
+        .back-btn:hover { background: #5568d3; }
+        .day-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; }
+        .day-card h4 { color: #667eea; margin-bottom: 10px; }
+        .day-card p { margin: 5px 0; font-size: 14px; color: #666; }
+        .day-card strong { color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.location.href='/mySpringBoot/dashboard'" title="返回">←</button>
+                <div>
+                    <h1>🏊 我的训练计划</h1>
+                </div>
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('today')"> 今日训练</button>
+                <button class="nav-tab" onclick="showTab('plans')">📋 所有计划</button>
+            </div>
+            <div class="today-date" id="todayDate"></div>
+        </div>
+
+        <div id="todaySection">
+            <div id="trainingList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>加载中...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="plansSection" style="display: none;">
+            <div id="plansList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>加载中...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="planDetailSection" style="display: none;">
+            <button class="back-btn" onclick="showPlans()">← 返回计划列表</button>
+            <div id="planDetailContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'today';
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+            document.getElementById('todayDate').textContent = '📅 ' + dateStr;
+            
+            loadTodayPlans();
+            loadAllPlans();
+        });
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('todaySection').style.display = tab === 'today' ? 'block' : 'none';
+            document.getElementById('plansSection').style.display = tab === 'plans' ? 'block' : 'none';
+            document.getElementById('planDetailSection').style.display = 'none';
+        }
+
+        function loadTodayPlans() {
+            fetch('/mySpringBoot/api/student/today-plans')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        renderTodayPlans(data.data);
+                    } else {
+                        document.getElementById('trainingList').innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">❌</div>
+                                <p>${data.message}</p>
+                            </div>
+                        `;
+                    }
+                });
+        }
+
+        function loadAllPlans() {
+            fetch('/mySpringBoot/api/student/all-plans')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        renderAllPlans(data.data);
+                    }
+                });
+        }
+
+        function renderAllPlans(plans) {
+            const container = document.getElementById('plansList');
+            
+            if (plans.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>暂无训练计划</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const statusMap = {
+                'DRAFT': '草稿',
+                'ACTIVE': '进行中',
+                'COMPLETED': '已完成'
+            };
+
+            container.innerHTML = plans.map(plan => `
+                <div class="plan-card" onclick="viewPlanDetail(${plan.id})">
+                    <div class="plan-card-header">
+                        <h3>${plan.planName}</h3>
+                        <span class="plan-status ${plan.status}">${statusMap[plan.status] || plan.status}</span>
+                    </div>
+                    <div class="plan-info">
+                        <p><strong>描述：</strong>${plan.description || '无'}</p>
+                        <p><strong>周期：</strong>${plan.startDate} 至 ${plan.endDate}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewPlanDetail(planId) {
+            fetch(`/mySpringBoot/api/student/plan-detail?id=${planId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const plan = data.data.plan;
+                        const details = data.data.details;
+                        
+                        let html = `
+                            <div class="plan-card">
+                                <div class="plan-card-header">
+                                    <h3>${plan.planName}</h3>
+                                </div>
+                                <div class="plan-info">
+                                    <p><strong>描述：</strong>${plan.description || '无'}</p>
+                                    <p><strong>周期：</strong>${plan.startDate} 至 ${plan.endDate}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        if (details && details.length > 0) {
+                            details.forEach(detail => {
+                                html += `
+                                    <div class="day-card">
+                                        <h4>📅 第 ${detail.dayNumber} 天 - ${detail.trainingDate}</h4>
+                                        <p><strong>强度：</strong>${detail.intensity || '未设置'}</p>
+                                        <p><strong>计划内容：</strong>${detail.notes || '无'}</p>
+                                    </div>
+                                `;
+                            });
+                        }
+                        
+                        document.getElementById('planDetailContent').innerHTML = html;
+                        document.getElementById('todaySection').style.display = 'none';
+                        document.getElementById('plansSection').style.display = 'none';
+                        document.getElementById('planDetailSection').style.display = 'block';
+                    }
+                });
+        }
+
+        function showPlans() {
+            document.getElementById('todaySection').style.display = 'none';
+            document.getElementById('plansSection').style.display = 'block';
+            document.getElementById('planDetailSection').style.display = 'none';
+        }
+
+        function renderTodayPlans(plans) {
+            const container = document.getElementById('trainingList');
+            
+            if (plans.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">😊</div>
+                        <p>今日无训练任务，好好休息吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '<div class="training-list">' + plans.map(plan => `
+                <div class="training-card ${plan.isChecked ? 'checked' : ''}">
+                    <div class="card-header">
+                        <span class="day-badge">第 ${plan.dayNumber} 天</span>
+                    </div>
+                    <div class="training-content">
+                        <div class="training-item">
+                            <span><strong>计划名称：</strong>${plan.planName}</span>
+                        </div>
+                        <div class="training-item">
+                            <span><strong>强度：</strong>${plan.intensity || '中等'}</span>
+                        </div>
+                        ${plan.notes ? `<div class="training-item"><span><strong>计划内容：</strong>${plan.notes}</span></div>` : ''}
+                    </div>
+                    <button class="check-btn ${plan.isChecked ? 'checked' : 'unchecked'}" 
+                            onclick="toggleCheck(${plan.id}, ${plan.isChecked})">
+                        ${plan.isChecked ? '✓ 已完成' : '○ 打卡'}
+                    </button>
+                </div>
+            `).join('') + '</div>';
+        }
+
+        function toggleCheck(detailId, currentStatus) {
+            const isChecked = !currentStatus;
+            fetch(`/mySpringBoot/api/student/check/${detailId}?isChecked=${isChecked}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert(isChecked ? '打卡成功！' : '已取消打卡');
+                    loadTodayPlans();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

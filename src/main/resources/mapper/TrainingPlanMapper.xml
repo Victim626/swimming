@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usbtj.springboot.swimming.mapper.TrainingPlanMapper">
+    
+    <resultMap id="trainingPlanMap" type="com.usbtj.springboot.swimming.entity.TrainingPlan">
+        <id property="id" column="id"/>
+        <result property="coachId" column="coach_id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="planName" column="plan_name"/>
+        <result property="description" column="description"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="status" column="status"/>
+        <result property="aiSuggestions" column="ai_suggestions"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findByCoachId" resultMap="trainingPlanMap">
+        SELECT * FROM training_plans WHERE coach_id = #{coachId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findByStudentId" resultMap="trainingPlanMap">
+        SELECT * FROM training_plans WHERE student_id = #{studentId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findByCoachAndStudent" resultMap="trainingPlanMap">
+        SELECT * FROM training_plans WHERE coach_id = #{coachId} AND student_id = #{studentId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findById" resultMap="trainingPlanMap">
+        SELECT * FROM training_plans WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO training_plans (
+            coach_id, student_id, plan_name, description, start_date, end_date, status, ai_suggestions
+        ) VALUES (
+            #{coachId}, #{studentId}, #{planName}, #{description}, #{startDate}, #{endDate}, #{status}, #{aiSuggestions}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE training_plans 
+        SET plan_name = #{planName}, 
+            description = #{description}, 
+            start_date = #{startDate}, 
+            end_date = #{endDate}, 
+            status = #{status},
+            ai_suggestions = #{aiSuggestions},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM training_plans WHERE id = #{id}
+    </delete>
+
+    <select id="countByCoachAndStudent" resultType="int">
+        SELECT COUNT(*) FROM training_plans WHERE coach_id = #{coachId} AND student_id = #{studentId}
+    </select>
+
+    <select id="findAllStudents" resultType="com.usbtj.springboot.swimming.entity.User">
+        SELECT * FROM users WHERE role = 'STUDENT' AND status = 1 ORDER BY id
+    </select>
+    
+    <select id="findCoachByStudentId" resultType="com.usbtj.springboot.swimming.entity.User">
+        SELECT u.* FROM users u
+        INNER JOIN coach_student_relations csr ON u.id = csr.coach_id
+        WHERE csr.student_id = #{studentId} AND csr.status = 1
+        ORDER BY csr.created_at DESC
+        LIMIT 1
+    </select>
+    
+</mapper>

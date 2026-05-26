@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教练资质认证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status-card {
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .status-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group input:disabled {
+            background: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            color: #0c5460;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏊 教练资质认证</h1>
+            <p>请提交您的资质信息等待人工审核</p>
+        </div>
+
+        <div id="statusCard" class="status-card hidden">
+            <div class="status-icon" id="statusIcon"></div>
+            <div class="status-text" id="statusText"></div>
+            <div class="status-desc" id="statusDesc"></div>
+        </div>
+
+        <div class="info-box">
+            <p><strong>提示：</strong>提交后将由管理员进行人工审核，审核通过后才能使用平台其他功能。请确保信息真实准确。</p>
+        </div>
+
+        <form id="verificationForm">
+            <div class="form-group">
+                <label for="realName">真实姓名 <span class="required">*</span></label>
+                <input type="text" id="realName" name="realName" required placeholder="请输入真实姓名">
+            </div>
+
+            <div class="form-group">
+                <label for="idCardNumber">身份证号 <span class="required">*</span></label>
+                <input type="text" id="idCardNumber" name="idCardNumber" required 
+                       placeholder="请输入18位身份证号" maxlength="18" pattern="[0-9Xx]{18}">
+            </div>
+
+            <div class="form-group">
+                <label for="certificateNumber">职业资格证书号 <span class="required">*</span></label>
+                <input type="text" id="certificateNumber" name="certificateNumber" required 
+                       placeholder="请输入教练资格证件号">
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">提交认证</button>
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+        </form>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // 页面加载时检查用户状态
+        window.addEventListener('DOMContentLoaded', function() {
+            const userStr = sessionStorage.getItem('currentUser');
+            if (!userStr) {
+                window.location.href = '/mySpringBoot/';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+
+            // 检查用户角色
+            if (currentUser.role !== 'COACH') {
+                window.location.href = '/mySpringBoot/dashboard';
+                return;
+            }
+
+            // 加载用户资质信息
+            loadVerificationStatus();
+        });
+
+        function loadVerificationStatus() {
+            fetch('/mySpringBoot/api/coach/verification/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200 && data.data) {
+                        const profile = data.data;
+                        const status = profile.qualificationVerified;
+                        
+                        // 先填充表单数据
+                        fillFormData(profile);
+                        
+                        // 再根据状态控制表单
+                        if (status === 1) {
+                            // 已通过：禁用表单
+                            disableForm();
+                            showStatusCard(status);
+                        } else if (status === 2) {
+                            // 未通过：启用表单可编辑
+                            enableForm();
+                            showStatusCard(status);
+                        } else if (status === 0) {
+                            // 待审核：禁用表单
+                            disableForm();
+                            showStatusCard(status);
+                        } else {
+                            // null或未提交：启用表单
+                            enableForm();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('加载状态失败:', error);
+                });
+        }
+
+        function showStatusCard(status) {
+            const statusCard = document.getElementById('statusCard');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const statusDesc = document.getElementById('statusDesc');
+
+            if (statusCard) {
+                statusCard.classList.remove('hidden');
+            }
+
+            switch(status) {
+                case 0: // 待审核
+                    statusCard.className = 'status-card status-pending';
+                    statusIcon.textContent = '⏳';
+                    statusText.textContent = '待审核';
+                    statusDesc.textContent = '您的资质信息已提交，正在等待管理员审核';
+                    break;
+                case 1: // 已通过
+                    statusCard.className = 'status-card status-approved';
+                    statusIcon.textContent = '✅';
+                    statusText.textContent = '认证通过';
+                    statusDesc.textContent = '恭喜！您已通过资质认证，现在可以使用平台所有功能';
+                    setTimeout(() => {
+                        window.location.href = '/mySpringBoot/dashboard';
+                    }, 2000);
+                    break;
+                case 2: // 未通过
+                    statusCard.className = 'status-card status-rejected';
+                    statusIcon.textContent = '❌';
+                    statusText.textContent = '认证未通过';
+                    statusDesc.textContent = '您的资质信息未通过审核，请修改后重新提交';
+                    break;
+            }
+        }
+
+        function disableForm() {
+            document.getElementById('realName').disabled = true;
+            document.getElementById('idCardNumber').disabled = true;
+            document.getElementById('certificateNumber').disabled = true;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = '已提交';
+        }
+
+        function enableForm() {
+            document.getElementById('realName').disabled = false;
+            document.getElementById('idCardNumber').disabled = false;
+            document.getElementById('certificateNumber').disabled = false;
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').textContent = '重新提交';
+        }
+
+        function fillFormData(profile) {
+            document.getElementById('realName').value = profile.realName || '';
+            document.getElementById('idCardNumber').value = profile.idCardNumber || '';
+            document.getElementById('certificateNumber').value = profile.certificateNumber || '';
+        }
+
+        // 表单提交
+        document.getElementById('verificationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            const submitBtn = document.getElementById('submitBtn');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            // 验证身份证号
+            const idCardNumber = document.getElementById('idCardNumber').value.trim();
+            const idCardRegex = /^[0-9Xx]{18}$/;
+            if (!idCardRegex.test(idCardNumber)) {
+                errorDiv.textContent = '请输入正确的18位身份证号';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // 禁用按钮
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+
+            const formData = new FormData(this);
+
+            fetch('/mySpringBoot/api/coach/verification/submit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    successDiv.textContent = '提交成功！等待管理员审核';
+                    successDiv.style.display = 'block';
+                    disableForm();
+                    setTimeout(() => {
+                        loadVerificationStatus();
+                    }, 1000);
+                } else {
+                    errorDiv.textContent = data.message || '提交失败';
+                    errorDiv.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '提交认证';
+                }
+            })
+            .catch(error => {
+                console.error('提交错误:', error);
+                errorDiv.textContent = '网络错误，请稍后重试';
+                errorDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交认证';
+            });
+        });
+    </script>
+</body>
+</html>
