@@ -458,9 +458,77 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping routines for database 'swimming_coach_platform'
---
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+/*!40000 ALTER TABLE `appointments` DISABLE KEYS */;
+INSERT INTO `appointments` (`id`, `coach_id`, `student_id`, `appointment_date`, `start_time`, `end_time`, `location`, `status`, `notes`, `created_at`, `updated_at`) VALUES (18,6,10,'2026-05-26','08:30:00','10:00:00','','CANCELLED','','2026-05-25 05:33:49','2026-05-25 05:33:59');
+/*!40000 ALTER TABLE `appointments` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `chat_messages` DISABLE KEYS */;
+INSERT INTO `chat_messages` (`id`, `sender_id`, `receiver_id`, `content`, `message_type`, `is_read`, `send_time`) VALUES (1,2,1,'11','TEXT',1,'2026-05-09 11:05:51'),(2,2,1,'11','TEXT',1,'2026-05-09 11:05:51'),(3,1,2,'6657','TEXT',1,'2026-05-09 11:06:10'),(4,1,2,'6657','TEXT',1,'2026-05-09 11:06:10'),(5,1,2,'6657','TEXT',1,'2026-05-09 11:06:23'),(6,1,2,'6657','TEXT',1,'2026-05-09 11:06:23'),(7,2,1,'1','TEXT',1,'2026-05-09 11:06:36'),(8,2,1,'1','TEXT',1,'2026-05-09 11:06:36'),(9,1,2,'1','TEXT',1,'2026-05-09 11:16:10'),(10,2,1,'你好王教练','TEXT',1,'2026-05-09 11:17:30'),(11,6,10,'不错呀','TEXT',1,'2026-05-25 05:49:02'),(12,10,6,'谢谢教练','TEXT',1,'2026-05-25 05:50:35'),(13,6,15,'看得到不','TEXT',1,'2026-05-25 18:12:52'),(14,15,6,'看得到','TEXT',1,'2026-05-25 18:14:36');
+/*!40000 ALTER TABLE `chat_messages` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `coach_profiles` DISABLE KEYS */;
+INSERT INTO `coach_profiles` (`id`, `user_id`, `real_name`, `phone`, `email`, `avatar`, `certificate_number`, `id_card_number`, `certificate_type`, `experience_years`, `introduction`, `qualification_verified`, `created_at`, `updated_at`) VALUES (1,4,'许洋帆','19977233756','19977233756@163.com',NULL,NULL,NULL,NULL,NULL,NULL,2,'2026-05-13 14:10:57','2026-05-15 08:53:54'),(2,5,'大志','12233445678','12233445678@163.com',NULL,NULL,NULL,NULL,NULL,NULL,0,'2026-05-13 14:39:21','2026-05-13 14:48:20'),(3,6,'大志','19955888745','19955888745@163.com',NULL,NULL,NULL,NULL,NULL,NULL,1,'2026-05-13 14:42:41','2026-05-13 14:44:56'),(4,7,'大志','19955888745','19955888745@163.com',NULL,NULL,NULL,NULL,NULL,NULL,2,'2026-05-14 09:28:53','2026-05-14 09:28:53'),(5,13,'教练1','19977231935','19977231935@163.com',NULL,NULL,NULL,NULL,NULL,NULL,2,'2026-05-25 06:17:31','2026-05-25 06:17:31');
+/*!40000 ALTER TABLE `coach_profiles` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `coach_shares` DISABLE KEYS */;
+/*!40000 ALTER TABLE `coach_shares` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `coach_student_relations` DISABLE KEYS */;
+INSERT INTO `coach_student_relations` (`id`, `coach_id`, `student_id`, `relationship_type`, `start_date`, `status`, `created_at`, `updated_at`) VALUES (1,6,2,'正式学员','2026-05-15',1,'2026-05-15 09:08:49','2026-05-15 09:08:49'),(3,6,10,'正式学员','2026-05-15',1,'2026-05-15 09:48:51','2026-05-15 09:48:51'),(4,6,11,'正式学员','2026-05-15',1,'2026-05-15 10:53:05','2026-05-15 10:53:05'),(5,13,12,'正式学员','2026-05-25',1,'2026-05-25 06:19:09','2026-05-25 06:19:09'),(6,13,11,'正式学员','2026-05-25',1,'2026-05-25 06:19:36','2026-05-25 06:19:36'),(7,6,14,'正式学员','2026-05-25',1,'2026-05-25 11:25:48','2026-05-25 11:25:48'),(8,6,15,'正式学员','2026-05-25',1,'2026-05-25 17:26:52','2026-05-25 17:26:52');
+/*!40000 ALTER TABLE `coach_student_relations` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `comments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `comments` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `messages` DISABLE KEYS */;
+/*!40000 ALTER TABLE `messages` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `plan_details` DISABLE KEYS */;
+INSERT INTO `plan_details` (`id`, `plan_id`, `training_item`, `duration`, `distance`, `intensity`, `notes`, `sort_order`, `created_at`, `day_number`, `is_checked`, `training_date`) VALUES (6,7,NULL,NULL,NULL,'低','111',1,'2026-05-20 08:51:05',1,1,'2026-05-20'),(7,7,NULL,NULL,NULL,'中等','2',1,'2026-05-20 08:51:05',2,0,'2026-05-21'),(8,7,NULL,NULL,NULL,'高','3',1,'2026-05-20 08:51:05',3,1,'2026-05-22'),(9,7,NULL,NULL,NULL,'低','4',1,'2026-05-20 08:51:05',4,0,'2026-05-23'),(10,7,NULL,NULL,NULL,'中等','5',1,'2026-05-20 08:51:05',5,0,'2026-05-24'),(11,8,'',NULL,NULL,'','',1,'2026-05-25 11:23:44',1,0,'2026-05-25'),(12,8,'',NULL,NULL,'','',1,'2026-05-25 11:23:44',2,0,'2026-05-26'),(13,8,'',NULL,NULL,'','',1,'2026-05-25 11:23:44',3,0,'2026-05-27'),(14,8,'',NULL,NULL,'','',1,'2026-05-25 11:23:44',4,0,'2026-05-28'),(15,8,'',NULL,NULL,'','',1,'2026-05-25 11:23:44',5,0,'2026-05-29');
+/*!40000 ALTER TABLE `plan_details` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `post_comment_likes` DISABLE KEYS */;
+INSERT INTO `post_comment_likes` (`id`, `comment_id`, `user_id`, `created_at`) VALUES (1,1,10,'2026-05-25 18:05:32');
+/*!40000 ALTER TABLE `post_comment_likes` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `post_comments` DISABLE KEYS */;
+INSERT INTO `post_comments` (`id`, `post_id`, `user_id`, `content`, `parent_id`, `created_at`, `like_count`, `updated_at`, `is_deleted`) VALUES (1,1,10,'不错',NULL,'2026-05-25 18:05:30',1,'2026-05-25 18:05:32',0),(2,1,6,'不错在哪',1,'2026-05-25 18:06:11',0,'2026-05-25 18:06:11',0),(3,1,6,'不错嘛',NULL,'2026-05-25 18:06:20',0,'2026-05-25 18:06:20',0);
+/*!40000 ALTER TABLE `post_comments` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `post_likes` DISABLE KEYS */;
+INSERT INTO `post_likes` (`id`, `post_id`, `user_id`, `created_at`) VALUES (1,2,10,'2026-05-25 18:05:39'),(2,1,6,'2026-05-25 18:06:01'),(3,2,6,'2026-05-25 18:06:44');
+/*!40000 ALTER TABLE `post_likes` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `posts` DISABLE KEYS */;
+INSERT INTO `posts` (`id`, `user_id`, `title`, `content`, `plan_detail_id`, `day_number`, `plan_name`, `training_date`, `intensity`, `duration`, `distance`, `show_training_info`, `like_count`, `comment_count`, `created_at`, `updated_at`) VALUES (1,10,'1','1',7,2,'kskbl','2026-05-21','中等',NULL,NULL,1,2,3,'2026-05-22 11:00:29','2026-05-25 18:06:20'),(2,10,'努力就有回报','努力就有回报',10,5,'kskbl','2026-05-24','中等',NULL,NULL,1,2,0,'2026-05-25 16:42:36','2026-05-25 18:06:44');
+/*!40000 ALTER TABLE `posts` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `student_profiles` DISABLE KEYS */;
+INSERT INTO `student_profiles` (`id`, `user_id`, `real_name`, `phone`, `email`, `avatar`, `gender`, `age`, `created_at`, `updated_at`) VALUES (1,10,'大志','13366547965','1',NULL,'MALE',18,'2026-05-15 09:18:03','2026-05-22 09:30:36'),(2,11,'大志桑','19977231935','19977231935@163.com',NULL,'MALE',23,'2026-05-15 10:52:47','2026-05-15 10:52:47'),(3,12,'小智','19977231935','19977231935@163.com',NULL,'MALE',23,'2026-05-25 06:16:22','2026-05-25 06:16:22'),(4,14,'彭博','1','1@qq.com',NULL,'MALE',22,'2026-05-25 11:25:08','2026-05-25 11:25:08'),(5,15,'测试1','1234567','1234567@qq.com',NULL,'FEMALE',18,'2026-05-25 17:25:47','2026-05-25 17:25:47');
+/*!40000 ALTER TABLE `student_profiles` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `student_shares` DISABLE KEYS */;
+/*!40000 ALTER TABLE `student_shares` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `time_slots` DISABLE KEYS */;
+INSERT INTO `time_slots` (`id`, `slot_name`, `start_time`, `end_time`, `max_capacity`, `sort_order`, `is_active`, `created_at`, `updated_at`) VALUES (1,'早上','08:30:00','10:00:00',5,1,1,'2026-05-20 13:53:28','2026-05-20 13:53:28'),(2,'下午','15:30:00','17:00:00',5,2,1,'2026-05-20 13:53:28','2026-05-20 13:53:28'),(3,'晚上','19:30:00','21:00:00',5,3,1,'2026-05-20 13:53:28','2026-05-20 13:53:28');
+/*!40000 ALTER TABLE `time_slots` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `training_plans` DISABLE KEYS */;
+INSERT INTO `training_plans` (`id`, `coach_id`, `student_id`, `plan_name`, `description`, `start_date`, `end_date`, `status`, `ai_suggestions`, `created_at`, `updated_at`) VALUES (7,6,10,'kskbl','zdjd','2026-05-20','2026-05-24','ACTIVE',NULL,'2026-05-20 08:51:05','2026-05-20 08:51:05'),(8,6,11,'1','1','2026-05-25','2026-05-29','ACTIVE',NULL,'2026-05-25 11:23:44','2026-05-25 11:23:44');
+/*!40000 ALTER TABLE `training_plans` ENABLE KEYS */;
+
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` (`id`, `username`, `password`, `real_name`, `phone`, `email`, `avatar`, `role`, `status`, `created_at`, `updated_at`) VALUES (1,'coach_wang','123456','王教练','13800138001','wang@swimming.com',NULL,'COACH',1,'2026-05-09 09:44:23','2026-05-09 09:44:23'),(2,'student_li','123456','李学员','13800138002','li@swimming.com',NULL,'STUDENT',1,'2026-05-09 09:44:23','2026-05-09 09:44:23'),(4,'Victim','123456',NULL,NULL,NULL,NULL,'COACH',1,'2026-05-13 14:10:57','2026-05-13 14:10:57'),(5,'HAJIMI','123456',NULL,NULL,NULL,NULL,'COACH',1,'2026-05-13 14:39:21','2026-05-13 14:39:21'),(6,'DAZHI','123456',NULL,NULL,NULL,NULL,'COACH',1,'2026-05-13 14:42:41','2026-05-13 14:42:41'),(7,'lucaiwen','123456',NULL,NULL,NULL,NULL,'COACH',1,'2026-05-14 09:28:53','2026-05-14 09:28:53'),(10,'DAZHIxue','123456',NULL,NULL,NULL,NULL,'STUDENT',1,'2026-05-15 09:18:03','2026-05-15 09:18:03'),(11,'student_zhi','123456',NULL,NULL,NULL,NULL,'STUDENT',1,'2026-05-15 10:52:47','2026-05-15 10:52:47'),(12,'xiaozhi','123456',NULL,NULL,NULL,NULL,'STUDENT',1,'2026-05-25 06:16:22','2026-05-25 06:16:22'),(13,'jiaolian1','123456',NULL,NULL,NULL,NULL,'COACH',1,'2026-05-25 06:17:31','2026-05-25 06:17:31'),(14,'PB','123456',NULL,NULL,NULL,NULL,'STUDENT',1,'2026-05-25 11:25:08','2026-05-25 11:25:08'),(15,'cheshi1','123456',NULL,NULL,NULL,NULL,'STUDENT',1,'2026-05-25 17:25:47','2026-05-25 17:25:47');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
